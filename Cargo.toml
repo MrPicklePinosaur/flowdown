@@ -1,0 +1,10 @@
+[package]
+name = "flowdown"
+version = "0.1.0"
+edition = "2021"
+authors = ["MrPicklePinosaur"]
+description = "lightweight markup language for conversation design"
+repository = "https://github.com/MrPicklePinosaur/flowdown"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
