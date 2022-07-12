@@ -8,3 +8,4 @@ repository = "https://github.com/MrPicklePinosaur/flowdown"
 
 [dependencies]
 serde = { version = "1", features = ["derive"] }
+pulldown-cmark = { version = "0.9.1" }

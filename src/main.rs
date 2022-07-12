@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use pulldown_cmark::{Parser, Options};
 
 #[derive(Serialize, Debug)]
 enum BlockType {
@@ -32,14 +33,23 @@ fn parse(input: &str) {
 }
 
 const INPUT: &str = r#"
-hello world!
+# hello world!
 
 hello
 world
 !
 
+my list
+- item 1
+- item 2
+- item 3
 "#;
 
 fn main() {
-    parse(INPUT);
+    // parse(INPUT);
+
+    let options = Options::empty();
+    let parser = Parser::new_ext(INPUT, options);
+
+    parser.for_each(|event| println!("event {:?}", event));
 }
