@@ -8,3 +8,5 @@ repository = "https://github.com/MrPicklePinosaur/flowdown"
 
 [dependencies]
 serde = { version = "1", features = ["derive"] }
+pest = { version = "2" }
+pest_derive = { version = "2" }
