@@ -1,0 +1,19 @@
+
+WHITESPACE = _{ " " }
+
+command_block = {
+    "[" ~ command_body ~ "]"
+}
+command_body = {
+    end_command_body |  code_command_body
+}
+end_command_body = {
+    "end"
+}
+code_command_body = @{
+    "code" ~ WHITESPACE+ ~ js_file_name
+}
+
+js_file_name = @{
+    ASCII_ALPHANUMERIC ~ ".js"    
+}

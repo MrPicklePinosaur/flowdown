@@ -1,45 +1,20 @@
-use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Debug)]
-enum BlockType {
-    Speak,
-}
+use pest::Parser;
 
-#[derive(Serialize, Debug)]
-struct Block {
-    #[serde(rename(serialize = "type"))]
-    block_type: BlockType,
-    random_speak: Vec<String>,
-}
+extern crate pest;
+#[macro_use]
+extern crate pest_derive;
 
-fn parse(input: &str) {
-    let mut output: Vec<Block> = vec![];
-    let mut utterance = String::new();
+#[derive(Parser)]
+#[grammar = "grammar.pest"]
+pub struct Lexer;
 
-    for line in input.lines() {
-
-        // utterence ends when newline
-        if line.is_empty() && !utterance.is_empty() {
-            output.push(Block {
-                block_type: BlockType::Speak,
-                random_speak: vec![utterance.drain(..).collect()],
-            });
-        }
-        let delim = if utterance.is_empty() { "" } else { " " };
-        utterance += &format!("{}{}", delim, line);
-    }
-    println!("{:?}", output);
-}
-
-const INPUT: &str = r#"
-hello world!
-
-hello
-world
-!
-
-"#;
+const INPUT: &str = r#"[end]"#;
 
 fn main() {
-    parse(INPUT);
+    let parse = Lexer::parse(Rule::command_block, INPUT).expect("unsuccessful parse").next().unwrap();
+
+    for pair in parse.into_inner() {
+        println!("Rule: {:?}", pair.as_rule());
+    }
 }
