@@ -1,6 +1,10 @@
 
 WHITESPACE = _{ " " }
 
+lines = {
+    ((command_block|utterance_block)? ~ NEWLINE)*
+}
+
 command_block = {
     "[" ~ command_body ~ "]"
 }
@@ -14,6 +18,10 @@ code_command_body = @{
     "code" ~ WHITESPACE+ ~ js_file_name
 }
 
+utterance_block = {
+    ASCII_ALPHANUMERIC+
+}
+
 js_file_name = @{
-    ASCII_ALPHANUMERIC ~ ".js"    
+    ASCII_ALPHANUMERIC+ ~ ".js"    
 }
