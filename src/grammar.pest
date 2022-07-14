@@ -2,7 +2,27 @@
 WHITESPACE = _{ " " }
 
 lines = {
-    ((command_block|utterance_block)? ~ NEWLINE)*
+    ((topic_block|choice_block|command_block|utterance_block)? ~ NEWLINE)*
+}
+
+topic_block = {
+    topic_header ~ topic_identifier
+}
+topic_header = @{
+    "="+
+}
+topic_identifier = {
+    ASCII_ALPHANUMERIC+
+}
+
+choice_block = {
+    choice_line ~ (NEWLINE ~ choice_line)*
+}
+choice_line = {
+    "*" ~ choice_content ~ ("->" ~ topic_identifier)?
+}
+choice_content = {
+    ASCII_ALPHANUMERIC+
 }
 
 command_block = {
@@ -19,7 +39,7 @@ code_command_body = @{
 }
 
 utterance_block = {
-    ASCII_ALPHANUMERIC+
+    ASCII_ALPHANUMERIC+ ~ (NEWLINE ~ utterance_block)*
 }
 
 js_file_name = @{
