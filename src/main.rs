@@ -1,3 +1,5 @@
+mod generator;
+
 use pest::{Parser, iterators::{Pair, Pairs}};
 
 extern crate pest;
@@ -50,7 +52,7 @@ fn main() {
                 println!("utterance_block"); 
                 parse_utterance_block(line);
             },
-            _ => {}
+            _ => unreachable!()
         }
     }
 }
@@ -77,7 +79,7 @@ fn parse_command_block(rule: Pair<Rule>) {
             match inner_pair.as_rule() {
                 Rule::end_command_body => { println!("> end command"); },
                 Rule::code_command_body => { println!("> code command"); },
-                _ => {}
+                _ => unreachable!()
             }
         }
     }

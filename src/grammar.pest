@@ -29,7 +29,7 @@ command_block = {
     "[" ~ command_body ~ "]"
 }
 command_body = {
-    end_command_body |  code_command_body
+    end_command_body | code_command_body
 }
 end_command_body = {
     "end"
