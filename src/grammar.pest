@@ -3,7 +3,14 @@ WHITESPACE = _{ " " }
 COMMENT = _{ "/*" ~ (!"*/" ~ ANY)* ~ "*/" }
 
 lines = {
-    ((topic_block|choice_block|command_block|utterance_block)? ~ NEWLINE)*
+    ((conversation_block|topic_block|choice_block|command_block|utterance_block|jump_block)? ~ NEWLINE)*
+}
+
+conversation_block = {
+    "@" ~ conversation_identifier
+}
+conversation_identifier = {
+    ASCII_ALPHANUMERIC+
 }
 
 topic_block = {
@@ -30,7 +37,7 @@ command_block = {
     "[" ~ command_body ~ "]"
 }
 command_body = {
-    end_command_body | code_command_body
+    end_command_body | code_command_body | capture_command_block | set_command_block
 }
 end_command_body = {
     "end"
@@ -38,13 +45,30 @@ end_command_body = {
 code_command_body = @{
     "code" ~ WHITESPACE+ ~ js_file_name
 }
+capture_command_block = {
+    "capture" ~ variable
+}
+set_command_block = {
+    "set" ~ variable ~ string_value
+}
 
 utterance_block = {
     ASCII_ALPHANUMERIC+ ~ (NEWLINE ~ utterance_block)*
 }
 
 jump_block = {
-    "->" ~ topic_identifier
+    "->" ~ ("@" ~ conversation_identifier|topic_identifier)
+}
+
+variable = @{
+    "$" ~ variable_identifier
+}
+variable_identifier = @{
+    ASCII_ALPHANUMERIC+
+}
+
+string_value = @{
+    "\"" ~ ASCII_ALPHANUMERIC ~ "\""
 }
 
 js_file_name = @{

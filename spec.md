@@ -75,7 +75,7 @@ goodbye!
 **capture**
 ```
 what's your name?
-[query first_name]
+[capture $first_name]
 ```
 
 **intent** (listen for intent)
@@ -102,7 +102,7 @@ will yield
 > that I am your father!
 ```
 
-### escapes and block quotes
+### escapes and block quotes (don't include)
 
 since square brackets and curly braces have special uses, to output the
 character literally, you must escape them
@@ -243,7 +243,7 @@ and of course, bookmarks are scoped
 
 ```
 
-### intents
+### intents (don't include)
 
 intents are almost to how topics work, we simply mark the topic with `intent:`
 and that block can be jumped to from any `[listen]` command (they behave like
