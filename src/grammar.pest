@@ -1,5 +1,6 @@
 
 WHITESPACE = _{ " " }
+COMMENT = _{ "/*" ~ (!"*/" ~ ANY)* ~ "*/" }
 
 lines = {
     ((topic_block|choice_block|command_block|utterance_block)? ~ NEWLINE)*
@@ -19,7 +20,7 @@ choice_block = {
     choice_line ~ (NEWLINE ~ choice_line)*
 }
 choice_line = {
-    "*" ~ choice_content ~ ("->" ~ topic_identifier)?
+    "*" ~ choice_content ~ jump_block?
 }
 choice_content = {
     ASCII_ALPHANUMERIC+
@@ -40,6 +41,10 @@ code_command_body = @{
 
 utterance_block = {
     ASCII_ALPHANUMERIC+ ~ (NEWLINE ~ utterance_block)*
+}
+
+jump_block = {
+    "->" ~ topic_identifier
 }
 
 js_file_name = @{
