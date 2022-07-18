@@ -12,15 +12,11 @@ extern crate pest_derive;
 pub struct Lexer;
 
 const INPUT: &str = r#"
+
+
 @ conversation1
-    poo
 
 @ conversation2
-    poo
-
-@ conversation3
-    poo
-
 
 "#;
 
@@ -61,22 +57,36 @@ impl Compiler {
         self.conversation_table.insert(name.into(), conversation);
     }
 
-    pub fn parse_diagram(&self, diagram: Pair<Rule>) {
+    pub fn parse_diagram(&self, pair: Pair<Rule>) {
         // TODO assert that rule is 'diagram'
-        println!("{:?}", diagram);
-        for conversation in diagram.into_inner() {
+        for line in pair.into_inner() {
 
-            if conversation.as_rule() == Rule::conversation {
-
+            if line.as_rule() == Rule::block {
+                self.parse_block(line);
             }
-            println!("found conversation");
-            self.parse_conversation(conversation);
-            
         }
     }
 
-    pub fn parse_conversation(&self, conversation: Pair<Rule>) {
+    pub fn parse_block(&self, pair: Pair<Rule>) {
 
+        let mut it = pair.into_inner();
+        let block = it.next().unwrap();
+        match block.as_rule() {
+            Rule::conversation_block => {
+                self.parse_conversation_block(block);
+            },
+            // Rule::command_block => {
+            //     println!("command_block");
+            //     self.parse_command_block(block);
+            // },
+            _ => {}
+        }
+    }
+
+    pub fn parse_conversation_block(&self, pair: Pair<Rule>) {
+        let mut it = pair.into_inner();
+        let id = it.next().unwrap().as_str();
+        println!("conversation_block {}", id);
     }
 
     /*

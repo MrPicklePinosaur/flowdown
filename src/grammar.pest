@@ -3,25 +3,23 @@ WHITESPACE = _{ " " }
 COMMENT = _{ "/*" ~ (!"*/" ~ ANY)* ~ "*/" }
 
 diagram = {
-    (NEWLINE* ~ conversation)* ~ NEWLINE*
+    SOI ~
+    (block? ~ NEWLINE)* ~
+    EOI
 }
 
-conversation = {
-    conversation_header ~ (NEWLINE ~ conversation_body)? ~ NEWLINE
+block = {
+    conversation_block|command_block
+}
+_conversation_body = {
+    ((topic_block|choice_block|command_block|utterance_block|jump_block)? ~ NEWLINE)*
 }
 
-conversation_header = {
+conversation_block = {
     "@" ~ ID
 }
 
-conversation_body = {
-    "poo"
-}
-_conversation_body = {
-    ((topic_header|choice_block|command_block|utterance_block|jump_block)? ~ NEWLINE)*
-}
-
-topic_header = {
+topic_block = {
     "=" ~ ID
 }
 
