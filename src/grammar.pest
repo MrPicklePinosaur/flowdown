@@ -4,33 +4,23 @@ COMMENT = _{ "/*" ~ (!"*/" ~ ANY)* ~ "*/" }
 
 diagram = {
     SOI ~
-    (block? ~ NEWLINE)* ~
+    (stmt? ~ NEWLINE)* ~
     EOI
 }
 
-block = {
-    conversation_block|command_block
+stmt = {
+    conversation_stmt|command_stmt
 }
 
-conversation_block = {
+conversation_stmt = {
     "@" ~ ID
 }
 
-topic_block = {
+topic_stmt = {
     "=" ~ ID
 }
 
-choice_block = {
-    choice_line ~ (NEWLINE ~ choice_line)*
-}
-choice_line = {
-    "*" ~ choice_content ~ jump_block?
-}
-choice_content = {
-    ASCII_ALPHANUMERIC+
-}
-
-command_block = {
+command_stmt = {
     "[" ~ end_command_body ~ "]"
 }
 end_command_body = {
@@ -45,6 +35,17 @@ capture_command_block = {
 set_command_block = {
     "set" ~ variable ~ string_value
 }
+
+choice_block = {
+    choice_line ~ (NEWLINE ~ choice_line)*
+}
+choice_line = {
+    "*" ~ choice_content ~ jump_block?
+}
+choice_content = {
+    ASCII_ALPHANUMERIC+
+}
+
 
 utterance_block = {
     ">" ~ ASCII_ALPHANUMERIC+

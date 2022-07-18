@@ -2,6 +2,7 @@ mod generator;
 mod blocks;
 
 use std::collections::HashMap;
+use std::fmt::Debug;
 use pest::{Parser, iterators::{Pair, Pairs}};
 
 use crate::blocks::*;
@@ -34,6 +35,8 @@ fn main() {
     let parse = Lexer::parse(Rule::diagram, INPUT).expect("unsuccessful parse").next().unwrap();
     let mut compiler = Compiler::new();
     compiler.parse_diagram(parse);
+
+    println!("{:?}", compiler);
 }
 
 #[derive(Default)]
@@ -44,6 +47,12 @@ struct Bookmark {
 struct Conversation {
     bookmark_table: HashMap<String, Bookmark>,
     blocks: Vec<Box<dyn Block>>,
+}
+
+impl Debug for Conversation {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "conversation with {} blocks", self.blocks.len())
+    }
 }
 
 impl Conversation {
@@ -75,31 +84,35 @@ impl Compiler {
 
         for line in pair.into_inner() {
 
-            if line.as_rule() == Rule::block {
-                self.parse_block(line);
+            if line.as_rule() == Rule::stmt {
+                self.parse_stmt(line);
             }
         }
     }
 
-    fn parse_block(&mut self, pair: Pair<Rule>) {
-        assert!(pair.as_rule() == Rule::block);
+    fn parse_stmt(&mut self, pair: Pair<Rule>) {
+        assert!(pair.as_rule() == Rule::stmt);
 
         let mut it = pair.into_inner();
-        let block = it.next().unwrap();
-        match block.as_rule() {
-            Rule::conversation_block => {
-                self.parse_conversation_block(block);
-            },
-            Rule::command_block => {
-                let cmd_block = self.parse_command_block(block);
-                self.cur_conv_mut().blocks.push(cmd_block);
-            },
-            _ => {}
+        let stmt = it.next().unwrap();
+
+        if stmt.as_rule() == Rule::conversation_stmt {
+            self.parse_conversation_stmt(stmt);
+        } else {
+
+            // these all evaluate to blocks
+            let block = match stmt.as_rule() {
+                Rule::command_stmt => {
+                    self.parse_command_stmt(stmt)
+                },
+                _ => unreachable!()
+            };
+            self.cur_conv_mut().blocks.push(block);
         }
     }
 
-    fn parse_conversation_block(&mut self, pair: Pair<Rule>) {
-        assert!(pair.as_rule() == Rule::conversation_block);
+    fn parse_conversation_stmt(&mut self, pair: Pair<Rule>) {
+        assert!(pair.as_rule() == Rule::conversation_stmt);
 
         let mut it = pair.into_inner();
         let id = it.next().unwrap().as_str();
@@ -109,12 +122,12 @@ impl Compiler {
 
     }
 
-    fn parse_command_block(&mut self, pair: Pair<Rule>) -> Box<dyn Block> {
-        assert!(pair.as_rule() == Rule::command_block);
+    fn parse_command_stmt(&mut self, pair: Pair<Rule>) -> Box<dyn Block> {
+        assert!(pair.as_rule() == Rule::command_stmt);
 
         let mut it = pair.into_inner();
-        let command_block = it.next().unwrap();
-        match command_block.as_rule() {
+        let command_stmt = it.next().unwrap();
+        match command_stmt.as_rule() {
             Rule::end_command_body => {
                 println!("end command");
                 Box::new(EndCommandBlock {})
@@ -138,5 +151,11 @@ impl Compiler {
 
     fn cur_conv_mut(&mut self) -> &mut Conversation {
         self.conv_table.get_mut(&self._cur_conv).unwrap()
+    }
+}
+
+impl Debug for Compiler {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_map().entries(self.conv_table.iter()).finish()
     }
 }
