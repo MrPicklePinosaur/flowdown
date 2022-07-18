@@ -11,9 +11,6 @@ diagram = {
 block = {
     conversation_block|command_block
 }
-_conversation_body = {
-    ((topic_block|choice_block|command_block|utterance_block|jump_block)? ~ NEWLINE)*
-}
 
 conversation_block = {
     "@" ~ ID
@@ -34,10 +31,7 @@ choice_content = {
 }
 
 command_block = {
-    "[" ~ command_body ~ "]"
-}
-command_body = {
-    end_command_body | code_command_body | capture_command_block | set_command_block
+    "[" ~ end_command_body ~ "]"
 }
 end_command_body = {
     "end"
@@ -53,7 +47,7 @@ set_command_block = {
 }
 
 utterance_block = {
-    ASCII_ALPHANUMERIC+ ~ (NEWLINE ~ utterance_block)*
+    ">" ~ ASCII_ALPHANUMERIC+
 }
 
 jump_block = {
