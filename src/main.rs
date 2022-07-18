@@ -12,29 +12,22 @@ extern crate pest_derive;
 pub struct Lexer;
 
 const INPUT: &str = r#"
+@ conversation1
+    poo
 
-@ conversation 1
+@ conversation2
+    poo
 
-    -> bookmark 1
-    -> bookmark 2
-    -> @conversation 1
-    -> @ conversation 2
+@ conversation3
+    poo
 
-    = bookmark 1
 
-    = bookmark 2
-
-@ conversation 2
-
-    = bookmark 2
-
-    = bookmark 3
 "#;
 
 fn main() {
-    let parse = Lexer::parse(Rule::lines, INPUT).expect("unsuccessful parse").next().unwrap();
+    let parse = Lexer::parse(Rule::diagram, INPUT).expect("unsuccessful parse").next().unwrap();
     let compiler = Compiler::default();
-    compiler.parse_sequence(parse);
+    compiler.parse_diagram(parse);
 }
 
 #[derive(Default)]
@@ -60,6 +53,33 @@ impl Compiler {
     }
     */
 
+    fn insert_conversation(&mut self, name: &str, conversation: Conversation) {
+        if self.conversation_table.contains_key(name) {
+            // TODO should error
+            return;
+        }
+        self.conversation_table.insert(name.into(), conversation);
+    }
+
+    pub fn parse_diagram(&self, diagram: Pair<Rule>) {
+        // TODO assert that rule is 'diagram'
+        println!("{:?}", diagram);
+        for conversation in diagram.into_inner() {
+
+            if conversation.as_rule() == Rule::conversation {
+
+            }
+            println!("found conversation");
+            self.parse_conversation(conversation);
+            
+        }
+    }
+
+    pub fn parse_conversation(&self, conversation: Pair<Rule>) {
+
+    }
+
+    /*
     pub fn parse_sequence(&self, rule: Pair<Rule>) {
         for line in rule.into_inner() {
             match line.as_rule() {
@@ -144,4 +164,5 @@ impl Compiler {
             _ => unreachable!()
         }
     }
+    */
 }

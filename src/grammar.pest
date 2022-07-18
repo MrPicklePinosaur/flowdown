@@ -2,25 +2,27 @@
 WHITESPACE = _{ " " }
 COMMENT = _{ "/*" ~ (!"*/" ~ ANY)* ~ "*/" }
 
-lines = {
-    ((conversation_block|topic_block|choice_block|command_block|utterance_block|jump_block)? ~ NEWLINE)*
+diagram = {
+    (NEWLINE* ~ conversation)* ~ NEWLINE*
 }
 
-conversation_block = {
-    "@" ~ conversation_identifier
-}
-conversation_identifier = {
-    ASCII_ALPHANUMERIC+
+conversation = {
+    conversation_header ~ (NEWLINE ~ conversation_body)? ~ NEWLINE
 }
 
-topic_block = {
-    topic_header ~ topic_identifier
+conversation_header = {
+    "@" ~ ID
 }
-topic_header = @{
-    "="+
+
+conversation_body = {
+    "poo"
 }
-topic_identifier = {
-    ASCII_ALPHANUMERIC+
+_conversation_body = {
+    ((topic_header|choice_block|command_block|utterance_block|jump_block)? ~ NEWLINE)*
+}
+
+topic_header = {
+    "=" ~ ID
 }
 
 choice_block = {
@@ -57,7 +59,7 @@ utterance_block = {
 }
 
 jump_block = {
-    "->" ~ ("@" ~ conversation_identifier|topic_identifier)
+    "->" ~ (conversation_identifier|topic_identifier)
 }
 
 variable = @{
@@ -67,10 +69,25 @@ variable_identifier = @{
     ASCII_ALPHANUMERIC+
 }
 
+conversation_identifier = {
+    "@" ~ ID
+}
+topic_identifier = {
+    ID
+}
+
 string_value = @{
     "\"" ~ ASCII_ALPHANUMERIC ~ "\""
 }
 
 js_file_name = @{
     ASCII_ALPHANUMERIC+ ~ ".js"    
+}
+
+SPACE_ID = {
+    ASCII_ALPHANUMERIC+
+}
+
+ID = @{
+    ASCII_ALPHANUMERIC+
 }
