@@ -6,6 +6,7 @@ use std::collections::HashMap;
 use serde::Serialize;
 
 use crate::blocks::*;
+use flowdown_derive::base_line;
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -16,22 +17,18 @@ pub struct Program {
     version_id: String,
     variables: Vec<()>,
     commands: Vec<()>,
-    lines: HashMap<String, Line>,
+    // lines: HashMap<String, Line>,
 }
 
-type _Line = HashMap<String, Box<dyn Any>>;
+#[base_line]
+pub struct StartLine;
+
+type _Line = HashMap<String, String>;
 pub struct Line(_Line);
 
 impl Line {
     pub fn new() -> Self {
-        let id: Box<dyn Any> = Box::new(generate_id());
-        let next_id: Box<dyn Any> = Box::new(None as Option<String>);
-
-        let new_line_map: _Line = HashMap::from([
-            ("id".into(), id),
-            ("next_id".into(), next_id)
-        ]);
-        Line(new_line_map)
+        Line(HashMap::new())
     } 
 }
 
@@ -51,9 +48,9 @@ impl From<Block> for Line {
     fn from(block: Block) -> Self {
         let mut line = Line::new();
 
-        match block {
-            Block::Start => 
-        }
+        // match block {
+        //     Block::Start => 
+        // }
     }
 }
 

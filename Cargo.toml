@@ -6,7 +6,12 @@ authors = ["MrPicklePinosaur"]
 description = "lightweight markup language for conversation design"
 repository = "https://github.com/MrPicklePinosaur/flowdown"
 
+[workspace]
+members = ["crates/*"]
+
 [dependencies]
 serde = { version = "1", features = ["derive"] }
 pest = { version = "2" }
 pest_derive = { version = "2" }
+
+flowdown_derive = { path = "crates/flowdown_derive" }
