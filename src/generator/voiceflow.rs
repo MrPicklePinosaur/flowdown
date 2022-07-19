@@ -16,46 +16,37 @@ pub struct Program {
     version_id: String,
     variables: Vec<()>,
     commands: Vec<()>,
-    lines: HashMap<String, Line>,
+    lines: HashMap<String, Box<dyn BaseLine>>,
 }
 
-type _Line = HashMap<String, Box<dyn Any>>;
-pub struct Line(_Line);
+pub trait BaseLine {}
 
-impl Line {
-    pub fn new() -> Self {
-        let id: Box<dyn Any> = Box::new(generate_id());
-        let next_id: Box<dyn Any> = Box::new(None as Option<String>);
-
-        let new_line_map: _Line = HashMap::from([
-            ("id".into(), id),
-            ("next_id".into(), next_id)
-        ]);
-        Line(new_line_map)
-    } 
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct StartLine {
+    id: String,
+    line_type: String,
+    next_id: Option<String>,
 }
 
-impl Deref for Line {
-    type Target = _Line;
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-impl DerefMut for Line {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
-    }
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SpeakLine {
+    id: String,
+    line_type: String,
+    next_id: Option<String>,
+    random_speak: Vec<String>
 }
 
-impl From<Block> for Line {
-    fn from(block: Block) -> Self {
-        let mut line = Line::new();
+// impl From<Block> for Line {
+//     fn from(block: Block) -> Self {
+//         let mut line = Line::new();
 
-        match block {
-            Block::Start => 
-        }
-    }
-}
+//         match block {
+//             Block::Start => 
+//         }
+//     }
+// }
 
 pub fn generate_id() -> String {
     String::new()
