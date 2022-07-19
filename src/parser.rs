@@ -16,12 +16,12 @@ struct Bookmark {
 
 struct Conversation {
     bookmark_table: HashMap<String, Bookmark>,
-    blocks: Vec<Box<dyn Block>>,
+    blocks: Vec<Block>,
 }
 
 impl Debug for Conversation {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "conversation with {} blocks", self.blocks.len())
+        write!(f, "conversation\n{:?}", self.blocks)
     }
 }
 
@@ -34,16 +34,16 @@ impl Conversation {
     }
 }
 
-pub struct Compiler {
+pub struct FlowdownParser {
     conv_table: HashMap<String, Conversation>,
     _cur_conv: String,
 }
 
-impl Compiler {
+impl FlowdownParser {
 
     pub fn new() -> Self {
         // TODO insert 'main' conversation to conversation_table
-        Compiler {
+        FlowdownParser {
             conv_table: HashMap::new(),
             _cur_conv: "main".into(),
         }
@@ -97,7 +97,7 @@ impl Compiler {
 
     }
 
-    fn parse_command_stmt(&mut self, pair: Pair<Rule>) -> Box<dyn Block> {
+    fn parse_command_stmt(&mut self, pair: Pair<Rule>) -> Block {
         assert!(pair.as_rule() == Rule::command_stmt);
 
         let mut it = pair.into_inner();
@@ -105,7 +105,7 @@ impl Compiler {
         match command_stmt.as_rule() {
             Rule::end_command_body => {
                 println!("end command");
-                Box::new(EndCommandBlock {})
+                Block::EndCommand
             },
             _ => unreachable!()
         }
@@ -129,7 +129,7 @@ impl Compiler {
     }
 }
 
-impl Debug for Compiler {
+impl Debug for FlowdownParser {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_map().entries(self.conv_table.iter()).finish()
     }

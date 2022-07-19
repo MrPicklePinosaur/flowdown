@@ -1,14 +1,11 @@
 
 // intermediate representation
 
-pub trait Block {}
-
-pub struct UtteranceBlock {
-    pub content: String
+#[derive(Debug)]
+pub enum Block {
+    Utterance {
+        content: String,
+    },
+    EndCommand,
 }
-impl Block for UtteranceBlock {}
-
-pub struct EndCommandBlock {
-}
-impl Block for EndCommandBlock {}
 

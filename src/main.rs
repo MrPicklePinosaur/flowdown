@@ -6,7 +6,7 @@ extern crate pest;
 #[macro_use]
 extern crate pest_derive;
 
-use crate::parser::Compiler;
+use crate::parser::FlowdownParser;
 
 const INPUT: &str = r#"
 
@@ -24,9 +24,9 @@ const INPUT: &str = r#"
 "#;
 
 fn main() {
-    let mut compiler = Compiler::new();
-    compiler.parse(INPUT);
+    let mut parser = FlowdownParser::new();
+    parser.parse(INPUT);
 
-    println!("{:?}", compiler);
+    println!("{:?}", parser);
 }
 
