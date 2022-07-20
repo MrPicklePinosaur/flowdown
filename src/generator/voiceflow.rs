@@ -36,7 +36,7 @@ pub fn serialize_diagram() -> Value {
     })
 }
 
-pub fn serialize_block(block: Block) -> Value {
+pub fn serialize_block(block: &Block) -> Value {
     match block {
         Block::Start => json!({
             "ports": [],
