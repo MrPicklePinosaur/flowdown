@@ -76,6 +76,7 @@ $ just book
 - [ ] cli
 - [ ] support for external files (audio, code)
 - [ ] project configuration toml
+- [ ] linker
 
 ## RESOURCES/RESEARCH
 

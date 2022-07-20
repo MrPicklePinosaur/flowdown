@@ -4,21 +4,31 @@ use serde::Serialize;
 use serde_json::{json, Value};
 use std::collections::HashMap;
 
-use crate::{blocks::*, parser::Dialog};
+use crate::{blocks::*, parser::*};
 
 const START_NODE_ID: &'static str = "start00000000000000000000";
 const DEFAULT_VOICE: &'static str = "Alexa";
+const ENTRY_DIALOG: &'static str = "main";
 
 pub struct VFConfig {
     pub project_name: String,
 }
 
-pub fn serialize_vf_file(config: &VFConfig, dialog: &Dialog, variables: &Vec<String>) -> Value {
+pub fn serialize_vf_file(config: &VFConfig, conv: &Conversation, variables: &Vec<String>) -> Value {
     let version_id = generate_id();
-    let main_diagram_id = generate_id();
 
     let mut diagrams = json!({});
-    diagrams[&main_diagram_id] = serialize_dialog(&main_diagram_id, &version_id, dialog);
+    let mut main_diagram_id = String::new();
+    for (name, dialog) in conv.dialog_table.iter() {
+        let id = generate_id();
+
+        // keep track of the id of the main diagram
+        if name.eq(ENTRY_DIALOG) {
+            main_diagram_id = id.to_owned();
+        }
+
+        diagrams[&id] = serialize_dialog(name, &version_id, dialog);
+    }
 
     let mut vf_file = json!({
         "_version": "1.2",
@@ -101,9 +111,9 @@ pub fn serialize_vf_file(config: &VFConfig, dialog: &Dialog, variables: &Vec<Str
     vf_file
 }
 
-fn serialize_dialog(diagram_id: &str, version_id: &str, dialog: &Dialog) -> Value {
+fn serialize_dialog(diagram_name: &str, version_id: &str, dialog: &Dialog) -> Value {
     json!({
-        "_id": diagram_id,
+        "_id": diagram_name,
         "offsetX": 0,
         "offsetY": 0,
         "zoom": 100,
@@ -112,15 +122,20 @@ fn serialize_dialog(diagram_id: &str, version_id: &str, dialog: &Dialog) -> Valu
         "versionID": version_id,
         "creatorID": 0,
         "modified": 0,
-        "nodes": serialize_nodes(&dialog.blocks),
+        "nodes": serialize_nodes(diagram_name, &dialog.blocks),
         "children": [],
         "type": "TOPIC"
     })
 }
 
-fn serialize_nodes(blocks: &Vec<Block>) -> Value {
-    let start_node = start_block();
-    let start_node_id = get_node_id(&start_node).unwrap();
+fn serialize_nodes(diagram_name: &str, blocks: &Vec<Block>) -> Value {
+    // generate start node id (if in main diagram, it's id must be a specific value)
+    let start_node_id = if diagram_name.eq(ENTRY_DIALOG) {
+        START_NODE_ID.to_owned()
+    } else {
+        generate_id()
+    };
+    let start_node = start_block(&start_node_id);
     let mut nodes = json!({ &start_node_id: start_node });
 
     let mut prev_node_id: String = start_node_id.to_owned();
@@ -146,9 +161,9 @@ fn serialize_nodes(blocks: &Vec<Block>) -> Value {
     nodes
 }
 
-fn start_block() -> Value {
+fn start_block(id: &str) -> Value {
     json!({
-        "nodeID": START_NODE_ID,
+        "nodeID": id,
         "type": "start",
         "data": {
             "steps": [],

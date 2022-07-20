@@ -16,11 +16,9 @@ const INPUT: &str = r#"
 > hello world # yue-HK-standard-B
 [set $counter '1']
 [capture $firstName]
--> bookmark1
-
-= bookmark1
 
 > goodbye world
+
 
 "#;
 
@@ -40,5 +38,5 @@ fn main() {
     };
 
     let dialog = conv.dialog_table.get("main").unwrap();
-    println!("{}", serialize_vf_file(&config, dialog, &conv.variables));
+    println!("{}", serialize_vf_file(&config, &conv, &conv.variables));
 }

@@ -1,14 +1,11 @@
 
-default: run
-
-run:
-    cargo run
-
-debug:
-    RUST_LOG=info,debug cargo run
+default: out
 
 out:
     cargo run 1> out.vf
+
+debug:
+    RUST_LOG=info,debug cargo run
 
 check:
     cargo check
