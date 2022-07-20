@@ -13,7 +13,7 @@ const INPUT: &str = r#"
 
 @ conversation1
 
-    > hello world
+    > hello world # yue-HK-standard-B
     [set $counter '1']
     [capture $firstName]
     > goodbye world

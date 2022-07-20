@@ -112,10 +112,17 @@ impl FlowdownParser {
     fn parse_utterance_stmt(&mut self, pair: Pair<Rule>) -> Block {
         assert!(pair.as_rule() == Rule::utterance_stmt);
 
-        let content = pair.into_inner().next().unwrap().as_str();
+        let mut it = pair.into_inner();
+        let content = it.next().unwrap().as_str();
+        let mut voice: Option<String> = None;
+
+        if let Some(voice_option) = it.next() {
+            voice = Some(voice_option.as_str().to_owned());
+        }
+
         info!("utterance_stmt {}", content);
         
-        Block::Utterance { content: content.into() }
+        Block::Utterance { content: content.into(), voice }
     }
 
     fn parse_command_stmt(&mut self, pair: Pair<Rule>) -> Block {
