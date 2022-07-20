@@ -27,7 +27,7 @@ pub fn serialize_vf_file(config: &VFConfig, conv: &Conversation, variables: &Vec
             main_diagram_id = id.to_owned();
         }
 
-        diagrams[&id] = serialize_dialog(name, &version_id, dialog);
+        diagrams[&id] = serialize_dialog(name, &id, &version_id, dialog);
     }
 
     let mut vf_file = json!({
@@ -111,20 +111,25 @@ pub fn serialize_vf_file(config: &VFConfig, conv: &Conversation, variables: &Vec
     vf_file
 }
 
-fn serialize_dialog(diagram_name: &str, version_id: &str, dialog: &Dialog) -> Value {
+fn serialize_dialog(
+    diagram_name: &str,
+    diagram_id: &str,
+    version_id: &str,
+    dialog: &Dialog,
+) -> Value {
     json!({
-        "_id": diagram_name,
+        "_id": diagram_id,
         "offsetX": 0,
         "offsetY": 0,
         "zoom": 100,
         "variables": [],
-        "name": "ROOT",
+        "name": if diagram_name.eq(ENTRY_DIALOG) { "ROOT" } else { diagram_name },
         "versionID": version_id,
         "creatorID": 0,
         "modified": 0,
         "nodes": serialize_nodes(diagram_name, &dialog.blocks),
         "children": [],
-        "type": "TOPIC"
+        "type": if diagram_name.eq(ENTRY_DIALOG) { "TOPIC" } else { "COMPONENT" }
     })
 }
 
