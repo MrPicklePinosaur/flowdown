@@ -7,19 +7,19 @@ extern crate pest;
 extern crate pest_derive;
 
 use crate::parser::FlowdownParser;
+use crate::generator::voiceflow::*;
 
 const INPUT: &str = r#"
 
 @ conversation1
 [end]
+> hello world
 [end]
 [end]
 
 
 [end]
 
-@ conversation2
-[end]
 
 "#;
 
@@ -28,5 +28,10 @@ fn main() {
     parser.parse(INPUT);
 
     println!("{:?}", parser);
+
+    let conv = parser.cur_conv();
+    for block in conv.blocks().iter() {
+        println!("block {}", serialize_block(block));
+    }
 }
 

@@ -14,9 +14,15 @@ struct Bookmark {
 
 }
 
-struct Conversation {
+pub struct Conversation {
     bookmark_table: HashMap<String, Bookmark>,
     blocks: Vec<Block>,
+}
+
+impl Conversation {
+    pub fn blocks(&self) -> &Vec<Block> {
+        &self.blocks
+    }
 }
 
 impl Debug for Conversation {
@@ -80,6 +86,9 @@ impl FlowdownParser {
                 Rule::command_stmt => {
                     self.parse_command_stmt(stmt)
                 },
+                Rule::utterance_stmt => {
+                    self.parse_utterance_stmt(stmt)
+                },
                 _ => unreachable!()
             };
             self.cur_conv_mut().blocks.push(block);
@@ -91,10 +100,19 @@ impl FlowdownParser {
 
         let mut it = pair.into_inner();
         let id = it.next().unwrap().as_str();
-        println!("conversation_block {}", id);
+        println!("conversation_stmt {}", id);
 
         self.new_conv(id);
 
+    }
+
+    fn parse_utterance_stmt(&mut self, pair: Pair<Rule>) -> Block {
+        assert!(pair.as_rule() == Rule::utterance_stmt);
+
+        let content = pair.into_inner().next().unwrap().as_str();
+        println!("utterance_stmt {}", content);
+        
+        Block::Utterance { content: content.into() }
     }
 
     fn parse_command_stmt(&mut self, pair: Pair<Rule>) -> Block {
@@ -120,7 +138,7 @@ impl FlowdownParser {
         self._cur_conv = name.into();
     }
 
-    fn cur_conv(&self) -> &Conversation {
+    pub fn cur_conv(&self) -> &Conversation {
         self.conv_table.get(&self._cur_conv).unwrap()
     }
 
