@@ -21,7 +21,7 @@ topic_stmt = {
 }
 
 command_stmt = {
-    "[" ~ end_command_body ~ "]"
+    "[" ~ (end_command_body|set_command_body) ~ "]"
 }
 end_command_body = {
     "end"
@@ -29,14 +29,14 @@ end_command_body = {
 code_command_body = @{
     "code" ~ WHITESPACE+ ~ js_file_name
 }
-capture_command_block = {
-    "capture" ~ variable
+capture_command_body = {
+    "capture" ~ "$" ~ ID
 }
-set_command_block = {
-    "set" ~ variable ~ string_value
+set_command_body = {
+    "set" ~ "$" ~ ID ~ QUOTATION_MARK ~ SPACE_ID ~ QUOTATION_MARK
 }
 
-choice_block = {
+choice_stmt = {
     choice_line ~ (NEWLINE ~ choice_line)*
 }
 choice_line = {
@@ -57,22 +57,11 @@ jump_block = {
     "->" ~ (conversation_identifier|topic_identifier)
 }
 
-variable = @{
-    "$" ~ variable_identifier
-}
-variable_identifier = @{
-    ASCII_ALPHANUMERIC+
-}
-
 conversation_identifier = {
     "@" ~ ID
 }
 topic_identifier = {
     ID
-}
-
-string_value = @{
-    "\"" ~ ASCII_ALPHANUMERIC ~ "\""
 }
 
 js_file_name = @{

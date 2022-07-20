@@ -12,7 +12,7 @@ pub struct VFConfig {
     pub project_name: String
 }
 
-pub fn serialize_vf_file(config: &VFConfig, conv: &Conversation) -> Value {
+pub fn serialize_vf_file(config: &VFConfig, conv: &Conversation, variables: &Vec<String>) -> Value {
     let version_id = generate_id();
     let main_diagram_id = generate_id();
 
@@ -40,7 +40,7 @@ pub fn serialize_vf_file(config: &VFConfig, conv: &Conversation) -> Value {
         },
         "version": {
             "_id": version_id,
-            "variables": [],
+            "variables": variables,
             "platformData": {
                  "slots": [],
                  "intents": [],
@@ -192,6 +192,19 @@ fn serialize_step(block: &Block) -> Value {
             "type": "end",
             "data": {
                 "ports": [],
+            }
+        }),
+        Block::SetCommand { id, value } => json!({
+            "type": "setV2",
+            "data": {
+                "sets": [
+                    {
+                        "type": "value",
+                        "variable": id,
+                        "expression": value
+                    }
+                ],
+                "ports": []
             }
         })
     };

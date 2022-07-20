@@ -13,7 +13,9 @@ const INPUT: &str = r#"
 
 @ conversation1
 > hello world
+[set $counter '1']
 > goodbye world
+
 
 "#;
 
@@ -28,6 +30,6 @@ fn main() {
     };
 
     let conv = parser.cur_conv();
-    println!("{}", serialize_vf_file(&config, conv));
+    println!("{}", serialize_vf_file(&config, conv, parser.variables()));
 }
 
