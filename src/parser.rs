@@ -1,8 +1,9 @@
 
 use std::collections::HashMap;
 use std::fmt::Debug;
-
+use log::info;
 use pest::{Parser, iterators::{Pair, Pairs}};
+
 use crate::blocks::*;
 
 #[derive(Parser)]
@@ -100,7 +101,7 @@ impl FlowdownParser {
 
         let mut it = pair.into_inner();
         let id = it.next().unwrap().as_str();
-        println!("conversation_stmt {}", id);
+        info!("conversation_stmt {}", id);
 
         self.new_conv(id);
 
@@ -110,7 +111,7 @@ impl FlowdownParser {
         assert!(pair.as_rule() == Rule::utterance_stmt);
 
         let content = pair.into_inner().next().unwrap().as_str();
-        println!("utterance_stmt {}", content);
+        info!("utterance_stmt {}", content);
         
         Block::Utterance { content: content.into() }
     }
@@ -122,7 +123,7 @@ impl FlowdownParser {
         let command_stmt = it.next().unwrap();
         match command_stmt.as_rule() {
             Rule::end_command_body => {
-                println!("end command");
+                info!("end command");
                 Block::EndCommand
             },
             _ => unreachable!()

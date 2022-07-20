@@ -12,12 +12,7 @@ use crate::generator::voiceflow::*;
 const INPUT: &str = r#"
 
 @ conversation1
-[end]
 > hello world
-[end]
-[end]
-
-
 [end]
 
 
@@ -27,11 +22,13 @@ fn main() {
     let mut parser = FlowdownParser::new();
     parser.parse(INPUT);
 
-    println!("{:?}", parser);
+    // println!("{:?}", parser);
+
+    let config = VFConfig {
+        project_name: "flowdown".into()
+    };
 
     let conv = parser.cur_conv();
-    for block in conv.blocks().iter() {
-        println!("block {}", serialize_block(block));
-    }
+    println!("{}", serialize_vf_file(&config, conv));
 }
 
