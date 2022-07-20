@@ -13,20 +13,22 @@ use crate::blocks::*;
 #[grammar = "grammar.pest"]
 pub struct Lexer;
 
-pub struct Conversation {
-    bookmark_table: HashMap<String, u32>,
+pub struct Dialog {
+    bookmark_table: HashMap<String, Option<u32>>,
     blocks: Vec<Block>,
 }
 
-impl Conversation {
+impl Dialog {
     pub fn blocks(&self) -> &Vec<Block> {
         &self.blocks
     }
-    pub fn add_bookmark(&mut self, bookmark_name: &str) -> u32 {
+
+    // actual bookmark definition
+    pub fn define_bookmark(&mut self, bookmark_name: &str) -> u32 {
         let line_number = self.blocks.len() as u32;
         if self
             .bookmark_table
-            .insert(bookmark_name.to_owned(), line_number)
+            .insert(bookmark_name.to_owned(), Some(line_number))
             .is_some()
         {
             // TODO should error if already exist
@@ -34,17 +36,33 @@ impl Conversation {
         info!("bookmark added at line {}", line_number);
         line_number
     }
+
+    // reference a bookmark without defining it
+    pub fn mention_bookmark(&mut self, bookmark_name: &str) {
+        if self.bookmark_table.contains_key(bookmark_name) {
+            return;
+        }
+        self.bookmark_table.insert(bookmark_name.to_owned(), None);
+    }
+
+    // check if all referenced bookmarks have been defined
+    pub fn is_valid(&self) -> bool {
+        self.bookmark_table
+            .iter()
+            .find(|(_, v)| v.is_none())
+            .is_some()
+    }
 }
 
-impl Debug for Conversation {
+impl Debug for Dialog {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "conversation\n{:?}", self.blocks)
     }
 }
 
-impl Conversation {
+impl Dialog {
     pub fn new() -> Self {
-        Conversation {
+        Dialog {
             bookmark_table: HashMap::new(),
             blocks: Vec::new(),
         }
@@ -52,16 +70,16 @@ impl Conversation {
 }
 
 pub struct FlowdownParser {
-    conv_table: HashMap<String, Conversation>,
+    dialog_table: HashMap<String, Dialog>,
     variables: Vec<String>,
     _cur_conv: String,
 }
 
 impl FlowdownParser {
     pub fn new() -> Self {
-        // TODO insert 'main' conversation to conversation_table
+        // TODO insert 'main' dialog to dialog_table
         FlowdownParser {
-            conv_table: HashMap::new(),
+            dialog_table: HashMap::new(),
             variables: Vec::new(),
             _cur_conv: "main".into(),
         }
@@ -91,8 +109,8 @@ impl FlowdownParser {
         let mut it = pair.into_inner();
         let stmt = it.next().unwrap();
 
-        if stmt.as_rule() == Rule::conversation_stmt {
-            self.parse_conversation_stmt(stmt);
+        if stmt.as_rule() == Rule::dialog_stmt {
+            self.parse_dialog_stmt(stmt);
         } else if stmt.as_rule() == Rule::bookmark_stmt {
             self.parse_bookmark_stmt(stmt);
         } else {
@@ -103,18 +121,18 @@ impl FlowdownParser {
                 Rule::utterance_stmt => self.parse_utterance_stmt(stmt),
                 _ => unreachable!(),
             };
-            self.cur_conv_mut().blocks.push(block);
+            self.cur_dialog_mut().blocks.push(block);
         }
     }
 
-    fn parse_conversation_stmt(&mut self, pair: Pair<Rule>) {
-        assert!(pair.as_rule() == Rule::conversation_stmt);
+    fn parse_dialog_stmt(&mut self, pair: Pair<Rule>) {
+        assert!(pair.as_rule() == Rule::dialog_stmt);
 
         let mut it = pair.into_inner();
         let id = it.next().unwrap().as_str();
-        info!("conversation_stmt {}", id);
+        info!("dialog_stmt {}", id);
 
-        self.new_conv(id);
+        self.new_dialog(id);
     }
 
     fn parse_bookmark_stmt(&mut self, pair: Pair<Rule>) {
@@ -123,7 +141,7 @@ impl FlowdownParser {
         let mut it = pair.into_inner();
         let id = it.next().unwrap().as_str();
         info!("bookmark {}", id);
-        self.cur_conv_mut().add_bookmark(id);
+        self.cur_dialog_mut().define_bookmark(id);
     }
 
     fn parse_command_stmt(&mut self, pair: Pair<Rule>) -> Block {
@@ -161,6 +179,7 @@ impl FlowdownParser {
         let mut it = pair.into_inner();
         let target = it.next().unwrap().as_str().to_owned();
         info!("jump_stmt {}", target);
+        self.mention_variable(&target);
 
         Block::Jump { target }
     }
@@ -184,21 +203,21 @@ impl FlowdownParser {
         }
     }
 
-    fn new_conv(&mut self, name: &str) {
-        if self.conv_table.contains_key(name) {
+    fn new_dialog(&mut self, name: &str) {
+        if self.dialog_table.contains_key(name) {
             // TODO should error
             return;
         }
-        self.conv_table.insert(name.into(), Conversation::new());
+        self.dialog_table.insert(name.into(), Dialog::new());
         self._cur_conv = name.into();
     }
 
-    pub fn cur_conv(&self) -> &Conversation {
-        self.conv_table.get(&self._cur_conv).unwrap()
+    pub fn cur_dialog(&self) -> &Dialog {
+        self.dialog_table.get(&self._cur_conv).unwrap()
     }
 
-    fn cur_conv_mut(&mut self) -> &mut Conversation {
-        self.conv_table.get_mut(&self._cur_conv).unwrap()
+    fn cur_dialog_mut(&mut self) -> &mut Dialog {
+        self.dialog_table.get_mut(&self._cur_conv).unwrap()
     }
 
     pub fn variables(&self) -> &Vec<String> {
@@ -212,6 +231,6 @@ impl FlowdownParser {
 
 impl Debug for FlowdownParser {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_map().entries(self.conv_table.iter()).finish()
+        f.debug_map().entries(self.dialog_table.iter()).finish()
     }
 }

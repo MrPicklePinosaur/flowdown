@@ -37,6 +37,6 @@ fn main() {
         project_name: "flowdown".into(),
     };
 
-    let conv = parser.cur_conv();
-    println!("{}", serialize_vf_file(&config, conv, parser.variables()));
+    let dialog = parser.cur_dialog();
+    println!("{}", serialize_vf_file(&config, dialog, parser.variables()));
 }

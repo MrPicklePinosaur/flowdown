@@ -5,7 +5,7 @@
 - [Syntax](./syntax.md)
     - [Utterances](syntax/utterances.md)
     - [Commands](syntax/commands.md)
-    - [Conversations and Bookmarks](syntax/conversation.md)
+    - [Dialogs and Bookmarks](syntax/dialog.md)
     - [Control Flow](syntax/control_flow.md)
     - [Intents (WIP)](syntax/intents.md)
 - [Examples](./examples.md)

@@ -7,6 +7,9 @@ run:
 out:
     cargo run 1> out.vf
 
+check:
+    cargo check
+
 devsetup:
     cp dev/hooks/* .git/hooks
 
