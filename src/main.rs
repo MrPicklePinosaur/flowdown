@@ -16,6 +16,7 @@ const INPUT: &str = r#"
     > hello world # yue-HK-standard-B
     [set $counter '1']
     [capture $firstName]
+    -> bookmark1
 
     = bookmark1
 

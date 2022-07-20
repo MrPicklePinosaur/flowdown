@@ -99,6 +99,7 @@ impl FlowdownParser {
             // these all evaluate to blocks
             let block = match stmt.as_rule() {
                 Rule::command_stmt => self.parse_command_stmt(stmt),
+                Rule::jump_stmt => self.parse_jump_stmt(stmt),
                 Rule::utterance_stmt => self.parse_utterance_stmt(stmt),
                 _ => unreachable!(),
             };
@@ -123,25 +124,6 @@ impl FlowdownParser {
         let id = it.next().unwrap().as_str();
         info!("bookmark {}", id);
         self.cur_conv_mut().add_bookmark(id);
-    }
-
-    fn parse_utterance_stmt(&mut self, pair: Pair<Rule>) -> Block {
-        assert!(pair.as_rule() == Rule::utterance_stmt);
-
-        let mut it = pair.into_inner();
-        let content = it.next().unwrap().as_str();
-        let mut voice: Option<String> = None;
-
-        if let Some(voice_option) = it.next() {
-            voice = Some(voice_option.as_str().to_owned());
-        }
-
-        info!("utterance_stmt {}", content);
-
-        Block::Utterance {
-            content: content.into(),
-            voice,
-        }
     }
 
     fn parse_command_stmt(&mut self, pair: Pair<Rule>) -> Block {
@@ -170,6 +152,35 @@ impl FlowdownParser {
                 Block::CaptureCommand { variable }
             }
             _ => unreachable!(),
+        }
+    }
+
+    fn parse_jump_stmt(&mut self, pair: Pair<Rule>) -> Block {
+        assert!(pair.as_rule() == Rule::jump_stmt);
+
+        let mut it = pair.into_inner();
+        let target = it.next().unwrap().as_str().to_owned();
+        info!("jump_stmt {}", target);
+
+        Block::Jump { target }
+    }
+
+    fn parse_utterance_stmt(&mut self, pair: Pair<Rule>) -> Block {
+        assert!(pair.as_rule() == Rule::utterance_stmt);
+
+        let mut it = pair.into_inner();
+        let content = it.next().unwrap().as_str();
+        let mut voice: Option<String> = None;
+
+        if let Some(voice_option) = it.next() {
+            voice = Some(voice_option.as_str().to_owned());
+        }
+
+        info!("utterance_stmt {}", content);
+
+        Block::Utterance {
+            content: content.into(),
+            voice,
         }
     }
 

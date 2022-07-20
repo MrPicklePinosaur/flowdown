@@ -172,6 +172,16 @@ fn serialize_block(step_id: &str) -> Value {
 
 fn serialize_step(block: &Block) -> Value {
     let mut node = match block {
+        Block::Jump { target } => json!({
+            /* empty speak is a NOOP */
+            "type": "speak",
+            "data": {
+                "randomize": true,
+                "canvasVisibility": "preview",
+                "dialogs": [],
+                "ports": [],
+            }
+        }),
         Block::Utterance { content, voice } => json!({
             "type": "speak",
             "data": {

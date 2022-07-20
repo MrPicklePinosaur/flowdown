@@ -2,6 +2,9 @@
 
 #[derive(Debug)]
 pub enum Block {
+    Jump {
+        target: String,
+    },
     Utterance {
         voice: Option<String>,
         content: String,
