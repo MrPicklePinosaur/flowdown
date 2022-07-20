@@ -24,7 +24,11 @@ fn main() {
 
     // println!("{:?}", parser);
 
+    let config = VFConfig {
+        project_name: "flowdown".into()
+    };
+
     let conv = parser.cur_conv();
-    println!("{}", serialize_vf_file(conv));
+    println!("{}", serialize_vf_file(&config, conv));
 }
 
