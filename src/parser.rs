@@ -3,6 +3,7 @@ use pest::{
     iterators::{Pair, Pairs},
     Parser,
 };
+use serde::ser::Error;
 use std::collections::HashMap;
 use std::fmt::Debug;
 
@@ -12,17 +13,26 @@ use crate::blocks::*;
 #[grammar = "grammar.pest"]
 pub struct Lexer;
 
-#[derive(Default)]
-struct Bookmark {}
-
 pub struct Conversation {
-    bookmark_table: HashMap<String, Bookmark>,
+    bookmark_table: HashMap<String, u32>,
     blocks: Vec<Block>,
 }
 
 impl Conversation {
     pub fn blocks(&self) -> &Vec<Block> {
         &self.blocks
+    }
+    pub fn add_bookmark(&mut self, bookmark_name: &str) -> u32 {
+        let line_number = self.blocks.len() as u32;
+        if self
+            .bookmark_table
+            .insert(bookmark_name.to_owned(), line_number)
+            .is_some()
+        {
+            // TODO should error if already exist
+        }
+        info!("bookmark added at line {}", line_number);
+        line_number
     }
 }
 
@@ -83,6 +93,8 @@ impl FlowdownParser {
 
         if stmt.as_rule() == Rule::conversation_stmt {
             self.parse_conversation_stmt(stmt);
+        } else if stmt.as_rule() == Rule::bookmark_stmt {
+            self.parse_bookmark_stmt(stmt);
         } else {
             // these all evaluate to blocks
             let block = match stmt.as_rule() {
@@ -102,6 +114,15 @@ impl FlowdownParser {
         info!("conversation_stmt {}", id);
 
         self.new_conv(id);
+    }
+
+    fn parse_bookmark_stmt(&mut self, pair: Pair<Rule>) {
+        assert!(pair.as_rule() == Rule::bookmark_stmt);
+
+        let mut it = pair.into_inner();
+        let id = it.next().unwrap().as_str();
+        info!("bookmark {}", id);
+        self.cur_conv_mut().add_bookmark(id);
     }
 
     fn parse_utterance_stmt(&mut self, pair: Pair<Rule>) -> Block {

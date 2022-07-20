@@ -16,12 +16,17 @@ const INPUT: &str = r#"
     > hello world # yue-HK-standard-B
     [set $counter '1']
     [capture $firstName]
+
+    = bookmark1
+
     > goodbye world
 
 
 "#;
 
 fn main() {
+    env_logger::builder().format_timestamp(None).init();
+
     let mut parser = FlowdownParser::new();
     parser.parse(INPUT);
 

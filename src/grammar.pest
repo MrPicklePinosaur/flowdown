@@ -9,14 +9,14 @@ diagram = {
 }
 
 stmt = {
-    conversation_stmt|command_stmt|utterance_stmt
+    conversation_stmt|bookmark_stmt|command_stmt|utterance_stmt
 }
 
 conversation_stmt = {
     "@" ~ ID
 }
 
-topic_stmt = {
+bookmark_stmt = {
     "=" ~ ID
 }
 

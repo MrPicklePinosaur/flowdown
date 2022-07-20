@@ -2,7 +2,7 @@
 default: run
 
 run:
-    cargo run
+    RUST_LOG=info cargo run
 
 out:
     cargo run 1> out.vf
