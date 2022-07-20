@@ -112,7 +112,7 @@ fn serialize_dialog(diagram_id: &str, version_id: &str, dialog: &Dialog) -> Valu
         "versionID": version_id,
         "creatorID": 0,
         "modified": 0,
-        "nodes": serialize_nodes(dialog.blocks()),
+        "nodes": serialize_nodes(&dialog.blocks),
         "children": [],
         "type": "TOPIC"
     })

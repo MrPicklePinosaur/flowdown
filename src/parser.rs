@@ -7,24 +7,26 @@ use serde::ser::Error;
 use std::collections::HashMap;
 use std::fmt::Debug;
 
-use crate::blocks::*;
+use crate::{blocks::*, error::*};
 
 #[derive(Parser)]
 #[grammar = "grammar.pest"]
 pub struct Lexer;
 
+#[derive(Debug)]
 pub struct Dialog {
+    pub bookmark_table: HashMap<String, u32>,
+    pub blocks: Vec<Block>,
+}
+
+struct DialogBuilder {
     bookmark_table: HashMap<String, Option<u32>>,
     blocks: Vec<Block>,
 }
 
-impl Dialog {
-    pub fn blocks(&self) -> &Vec<Block> {
-        &self.blocks
-    }
-
+impl DialogBuilder {
     // actual bookmark definition
-    pub fn define_bookmark(&mut self, bookmark_name: &str) -> u32 {
+    fn define_bookmark(&mut self, bookmark_name: &str) -> u32 {
         let line_number = self.blocks.len() as u32;
         if self
             .bookmark_table
@@ -38,50 +40,74 @@ impl Dialog {
     }
 
     // reference a bookmark without defining it
-    pub fn mention_bookmark(&mut self, bookmark_name: &str) {
+    fn mention_bookmark(&mut self, bookmark_name: &str) {
         if self.bookmark_table.contains_key(bookmark_name) {
             return;
         }
         self.bookmark_table.insert(bookmark_name.to_owned(), None);
     }
 
+    fn build(mut self) -> Result<Dialog> {
+        let undefined = self.undefined_bookmarks();
+        if !undefined.is_empty() {
+            return Err(FlowdownError::UndefinedBookmark(undefined));
+        }
+
+        let bookmark_table =
+            HashMap::from_iter(self.bookmark_table.drain().map(|(k, v)| (k, v.unwrap())));
+        Ok(Dialog {
+            bookmark_table,
+            blocks: self.blocks,
+        })
+    }
+
     // check if all referenced bookmarks have been defined
-    pub fn is_valid(&self) -> bool {
+    fn undefined_bookmarks(&self) -> Vec<String> {
         self.bookmark_table
             .iter()
-            .find(|(_, v)| v.is_none())
-            .is_some()
+            .filter(|(_, v)| v.is_none())
+            .map(|(k, _)| k.to_owned())
+            .collect()
     }
 }
 
-impl Debug for Dialog {
+impl Debug for DialogBuilder {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "conversation\n{:?}", self.blocks)
     }
 }
 
-impl Dialog {
+impl DialogBuilder {
     pub fn new() -> Self {
-        Dialog {
+        DialogBuilder {
             bookmark_table: HashMap::new(),
             blocks: Vec::new(),
         }
     }
 }
 
-pub struct FlowdownParser {
-    dialog_table: HashMap<String, Dialog>,
-    variables: Vec<String>,
-    _cur_conv: String,
+#[derive(Debug)]
+pub struct Conversation {
+    pub dialog_table: HashMap<String, Dialog>,
+    pub variables: Vec<String>,
 }
 
-impl FlowdownParser {
+pub struct ConversationBuilder {
+    dialog_table: HashMap<String, DialogBuilder>,
+    variables: Vec<String>,
+    _cur_dialog: String,
+}
+
+impl ConversationBuilder {
     pub fn new() -> Self {
-        // TODO insert 'main' dialog to dialog_table
-        FlowdownParser {
-            dialog_table: HashMap::new(),
+        // create the main dialog by default
+        let mut dialog_table = HashMap::new();
+        dialog_table.insert("main".into(), DialogBuilder::new());
+
+        ConversationBuilder {
+            dialog_table,
             variables: Vec::new(),
-            _cur_conv: "main".into(),
+            _cur_dialog: "main".into(),
         }
     }
 
@@ -179,7 +205,7 @@ impl FlowdownParser {
         let mut it = pair.into_inner();
         let target = it.next().unwrap().as_str().to_owned();
         info!("jump_stmt {}", target);
-        self.mention_variable(&target);
+        self.cur_dialog_mut().mention_bookmark(&target);
 
         Block::Jump { target }
     }
@@ -208,28 +234,38 @@ impl FlowdownParser {
             // TODO should error
             return;
         }
-        self.dialog_table.insert(name.into(), Dialog::new());
-        self._cur_conv = name.into();
+        self.dialog_table.insert(name.into(), DialogBuilder::new());
+        self._cur_dialog = name.into();
     }
 
-    pub fn cur_dialog(&self) -> &Dialog {
-        self.dialog_table.get(&self._cur_conv).unwrap()
+    fn cur_dialog(&self) -> &DialogBuilder {
+        self.dialog_table.get(&self._cur_dialog).unwrap()
     }
 
-    fn cur_dialog_mut(&mut self) -> &mut Dialog {
-        self.dialog_table.get_mut(&self._cur_conv).unwrap()
-    }
-
-    pub fn variables(&self) -> &Vec<String> {
-        &self.variables
+    fn cur_dialog_mut(&mut self) -> &mut DialogBuilder {
+        self.dialog_table.get_mut(&self._cur_dialog).unwrap()
     }
 
     fn mention_variable(&mut self, variable_name: &str) {
         self.variables.push(variable_name.to_owned());
     }
+
+    pub fn build(self) -> Result<Conversation> {
+        // build all dialogs
+        let mut dialog_table = HashMap::<String, Dialog>::new();
+        for (id, dialog_builder) in self.dialog_table.into_iter() {
+            let dialog = dialog_builder.build()?;
+            dialog_table.insert(id, dialog);
+        }
+
+        Ok(Conversation {
+            dialog_table,
+            variables: self.variables,
+        })
+    }
 }
 
-impl Debug for FlowdownParser {
+impl Debug for ConversationBuilder {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_map().entries(self.dialog_table.iter()).finish()
     }

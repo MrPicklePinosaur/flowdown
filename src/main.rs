@@ -1,4 +1,5 @@
 mod blocks;
+pub mod error;
 mod generator;
 mod parser;
 
@@ -7,20 +8,19 @@ extern crate pest;
 extern crate pest_derive;
 
 use crate::generator::voiceflow::*;
-use crate::parser::FlowdownParser;
+use crate::parser::ConversationBuilder;
+use log::{debug, info};
 
 const INPUT: &str = r#"
 
-@ conversation1
+> hello world # yue-HK-standard-B
+[set $counter '1']
+[capture $firstName]
+-> bookmark1
 
-    > hello world # yue-HK-standard-B
-    [set $counter '1']
-    [capture $firstName]
-    -> bookmark1
+= bookmark1
 
-    = bookmark1
-
-    > goodbye world
+> goodbye world
 
 
 "#;
@@ -28,8 +28,11 @@ const INPUT: &str = r#"
 fn main() {
     env_logger::builder().format_timestamp(None).init();
 
-    let mut parser = FlowdownParser::new();
-    parser.parse(INPUT);
+    let mut conv_builder = ConversationBuilder::new();
+    conv_builder.parse(INPUT);
+    let conv = conv_builder.build().unwrap();
+
+    debug!("{:?}", conv.dialog_table);
 
     // println!("{:?}", parser);
 
@@ -37,6 +40,6 @@ fn main() {
         project_name: "flowdown".into(),
     };
 
-    let dialog = parser.cur_dialog();
-    println!("{}", serialize_vf_file(&config, dialog, parser.variables()));
+    let dialog = conv.dialog_table.get("main").unwrap();
+    println!("{}", serialize_vf_file(&config, dialog, &conv.variables));
 }
