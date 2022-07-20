@@ -39,6 +39,10 @@ fn main() {
         project_name: "flowdown".into(),
     };
 
+    let mut compiler = VFCompiler::new();
     let dialog = conv.dialog_table.get("main").unwrap();
-    println!("{}", serialize_vf_file(&config, &conv, &conv.variables));
+    println!(
+        "{}",
+        compiler.serialize_vf_file(&config, &conv, &conv.variables)
+    );
 }
