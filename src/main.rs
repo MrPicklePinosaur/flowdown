@@ -13,8 +13,7 @@ const INPUT: &str = r#"
 
 @ conversation1
 > hello world
-[end]
-
+> goodbye world
 
 "#;
 
