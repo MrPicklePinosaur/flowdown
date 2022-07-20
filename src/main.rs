@@ -12,9 +12,11 @@ use crate::generator::voiceflow::*;
 const INPUT: &str = r#"
 
 @ conversation1
-> hello world
-[set $counter '1']
-> goodbye world
+
+    > hello world
+    [set $counter '1']
+    [capture $firstName]
+    > goodbye world
 
 
 "#;

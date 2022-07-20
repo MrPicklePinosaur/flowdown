@@ -53,7 +53,7 @@ pub fn serialize_vf_file(config: &VFConfig, conv: &Conversation, variables: &Vec
                      "defaultVoice": "Alexa"
                  },
                  "publishing": {},
-                 "platform": "general"
+                 "platform": "voice_default"
             },
             "name": "Initial Version",
             "projectID": generate_id(),
@@ -194,7 +194,7 @@ fn serialize_step(block: &Block) -> Value {
                 "ports": [],
             }
         }),
-        Block::SetCommand { id, value } => json!({
+        Block::SetCommand { variable: id, value } => json!({
             "type": "setV2",
             "data": {
                 "sets": [
@@ -206,7 +206,21 @@ fn serialize_step(block: &Block) -> Value {
                 ],
                 "ports": []
             }
-        })
+        }),
+        Block::CaptureCommand { variable } => json!({
+            "type": "captureV2",
+            "data": {
+                "intentScope": "GLOBAL",
+                "capture": {
+                    "type": "query",
+                    "variable": variable,
+                },
+                "noReply": null,
+                "noMatch": null,
+                "chips": null,
+                "ports": []
+            },
+        }),
     };
     node["nodeID"] = Value::String(generate_id());
 

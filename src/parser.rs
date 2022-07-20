@@ -131,10 +131,17 @@ impl FlowdownParser {
             Rule::set_command_body => {
                 info!("set command");
                 let mut it = command_stmt.into_inner();
-                let id = it.next().unwrap().as_str().to_owned();
+                let variable = it.next().unwrap().as_str().to_owned();
                 let value = it.next().unwrap().as_str().to_owned();
-                self.mention_variable(&id);
-                Block::SetCommand { id , value }
+                self.mention_variable(&variable);
+                Block::SetCommand { variable, value }
+            },
+            Rule::capture_command_body => {
+                info!("capture command");
+                let mut it = command_stmt.into_inner();
+                let variable = it.next().unwrap().as_str().to_owned();
+                self.mention_variable(&variable);
+                Block::CaptureCommand { variable }
             },
             _ => unreachable!()
         }
