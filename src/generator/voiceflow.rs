@@ -1,8 +1,8 @@
 // voiceflow diagram types
 
-use std::collections::HashMap;
 use serde::Serialize;
 use serde_json::{json, Value};
+use std::collections::HashMap;
 
 use crate::{blocks::*, parser::Conversation};
 
@@ -10,7 +10,7 @@ const START_NODE_ID: &'static str = "start00000000000000000000";
 const DEFAULT_VOICE: &'static str = "Alexa";
 
 pub struct VFConfig {
-    pub project_name: String
+    pub project_name: String,
 }
 
 pub fn serialize_vf_file(config: &VFConfig, conv: &Conversation, variables: &Vec<String>) -> Value {
@@ -101,7 +101,6 @@ pub fn serialize_vf_file(config: &VFConfig, conv: &Conversation, variables: &Vec
     vf_file
 }
 
-
 fn serialize_conversation(diagram_id: &str, version_id: &str, conv: &Conversation) -> Value {
     json!({
         "_id": diagram_id,
@@ -122,9 +121,7 @@ fn serialize_conversation(diagram_id: &str, version_id: &str, conv: &Conversatio
 fn serialize_nodes(blocks: &Vec<Block>) -> Value {
     let start_node = start_block();
     let start_node_id = get_node_id(&start_node).unwrap();
-    let mut nodes = json!({
-        &start_node_id: start_node
-    });
+    let mut nodes = json!({ &start_node_id: start_node });
 
     let mut prev_node_id: String = start_node_id.to_owned();
     for block in blocks.iter() {
@@ -195,7 +192,10 @@ fn serialize_step(block: &Block) -> Value {
                 "ports": [],
             }
         }),
-        Block::SetCommand { variable: id, value } => json!({
+        Block::SetCommand {
+            variable: id,
+            value,
+        } => json!({
             "type": "setV2",
             "data": {
                 "sets": [
@@ -240,12 +240,14 @@ fn serialize_port(target: &str) -> Value {
 }
 
 fn generate_id() -> String {
-    use rand::{seq::SliceRandom, Rng, thread_rng};
+    use rand::{seq::SliceRandom, thread_rng, Rng};
 
     const ID_LEN: u32 = 24;
     let alphabet: Vec<char> = ('0'..='9').chain('a'..='f').collect();
 
-    (0..ID_LEN).map(|_| alphabet.choose(&mut thread_rng()).unwrap()).collect::<String>()
+    (0..ID_LEN)
+        .map(|_| alphabet.choose(&mut thread_rng()).unwrap())
+        .collect::<String>()
 }
 
 fn get_node_id(value: &Value) -> Option<String> {

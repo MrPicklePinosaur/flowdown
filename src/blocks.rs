@@ -1,4 +1,3 @@
-
 // intermediate representation
 
 #[derive(Debug)]
@@ -16,4 +15,3 @@ pub enum Block {
     },
     EndCommand,
 }
-

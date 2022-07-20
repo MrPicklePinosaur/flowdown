@@ -1,8 +1,10 @@
-
+use log::info;
+use pest::{
+    iterators::{Pair, Pairs},
+    Parser,
+};
 use std::collections::HashMap;
 use std::fmt::Debug;
-use log::info;
-use pest::{Parser, iterators::{Pair, Pairs}};
 
 use crate::blocks::*;
 
@@ -11,9 +13,7 @@ use crate::blocks::*;
 pub struct Lexer;
 
 #[derive(Default)]
-struct Bookmark {
-
-}
+struct Bookmark {}
 
 pub struct Conversation {
     bookmark_table: HashMap<String, Bookmark>,
@@ -48,7 +48,6 @@ pub struct FlowdownParser {
 }
 
 impl FlowdownParser {
-
     pub fn new() -> Self {
         // TODO insert 'main' conversation to conversation_table
         FlowdownParser {
@@ -59,7 +58,10 @@ impl FlowdownParser {
     }
 
     pub fn parse(&mut self, input: &str) {
-        let parsed = Lexer::parse(Rule::diagram, input).expect("unsuccessful parse").next().unwrap();
+        let parsed = Lexer::parse(Rule::diagram, input)
+            .expect("unsuccessful parse")
+            .next()
+            .unwrap();
         self.parse_diagram(parsed);
     }
 
@@ -67,7 +69,6 @@ impl FlowdownParser {
         assert!(pair.as_rule() == Rule::diagram);
 
         for line in pair.into_inner() {
-
             if line.as_rule() == Rule::stmt {
                 self.parse_stmt(line);
             }
@@ -83,16 +84,11 @@ impl FlowdownParser {
         if stmt.as_rule() == Rule::conversation_stmt {
             self.parse_conversation_stmt(stmt);
         } else {
-
             // these all evaluate to blocks
             let block = match stmt.as_rule() {
-                Rule::command_stmt => {
-                    self.parse_command_stmt(stmt)
-                },
-                Rule::utterance_stmt => {
-                    self.parse_utterance_stmt(stmt)
-                },
-                _ => unreachable!()
+                Rule::command_stmt => self.parse_command_stmt(stmt),
+                Rule::utterance_stmt => self.parse_utterance_stmt(stmt),
+                _ => unreachable!(),
             };
             self.cur_conv_mut().blocks.push(block);
         }
@@ -106,7 +102,6 @@ impl FlowdownParser {
         info!("conversation_stmt {}", id);
 
         self.new_conv(id);
-
     }
 
     fn parse_utterance_stmt(&mut self, pair: Pair<Rule>) -> Block {
@@ -121,8 +116,11 @@ impl FlowdownParser {
         }
 
         info!("utterance_stmt {}", content);
-        
-        Block::Utterance { content: content.into(), voice }
+
+        Block::Utterance {
+            content: content.into(),
+            voice,
+        }
     }
 
     fn parse_command_stmt(&mut self, pair: Pair<Rule>) -> Block {
@@ -134,7 +132,7 @@ impl FlowdownParser {
             Rule::end_command_body => {
                 info!("end command");
                 Block::EndCommand
-            },
+            }
             Rule::set_command_body => {
                 info!("set command");
                 let mut it = command_stmt.into_inner();
@@ -142,15 +140,15 @@ impl FlowdownParser {
                 let value = it.next().unwrap().as_str().to_owned();
                 self.mention_variable(&variable);
                 Block::SetCommand { variable, value }
-            },
+            }
             Rule::capture_command_body => {
                 info!("capture command");
                 let mut it = command_stmt.into_inner();
                 let variable = it.next().unwrap().as_str().to_owned();
                 self.mention_variable(&variable);
                 Block::CaptureCommand { variable }
-            },
-            _ => unreachable!()
+            }
+            _ => unreachable!(),
         }
     }
 
