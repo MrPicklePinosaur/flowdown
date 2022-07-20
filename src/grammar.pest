@@ -47,10 +47,13 @@ choice_content = {
 }
 
 utterance_stmt = {
-    ">" ~ utterance_content
+    ">" ~ utterance_content ~ ( "#" ~ utterance_voice)?
 }
 utterance_content = {
     ASCII_ALPHANUMERIC+
+}
+utterance_voice = @{
+    (ASCII_ALPHANUMERIC|"-")+
 }
 
 jump_block = {

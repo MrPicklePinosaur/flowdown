@@ -7,6 +7,7 @@ use serde_json::{json, Value};
 use crate::{blocks::*, parser::Conversation};
 
 const START_NODE_ID: &'static str = "start00000000000000000000";
+const DEFAULT_VOICE: &'static str = "Alexa";
 
 pub struct VFConfig {
     pub project_name: String
@@ -26,7 +27,7 @@ pub fn serialize_vf_file(config: &VFConfig, conv: &Conversation, variables: &Vec
             "name": config.project_name,
             "teamID": "",
             "devVersion": version_id,
-            "platform": "chatbot",
+            "platform": "general",
             "platformData": {
                 "invocationName": "template project general"
             },
@@ -50,7 +51,7 @@ pub fn serialize_vf_file(config: &VFConfig, conv: &Conversation, variables: &Vec
                      "locales": [
                          "en-US"
                      ],
-                     "defaultVoice": "Alexa"
+                     "defaultVoice": DEFAULT_VOICE,
                  },
                  "publishing": {},
                  "platform": "voice_default"
@@ -91,7 +92,7 @@ pub fn serialize_vf_file(config: &VFConfig, conv: &Conversation, variables: &Vec
                     "variables": {}
                 },
                 "settings": {},
-                "platform": "chatbot"
+                "platform": "general"
             },
         },
         "diagrams": diagrams,
@@ -174,15 +175,15 @@ fn serialize_block(step_id: &str) -> Value {
 
 fn serialize_step(block: &Block) -> Value {
     let mut node = match block {
-        Block::Utterance { content } => json!({
+        Block::Utterance { content, voice } => json!({
             "type": "speak",
             "data": {
                 "randomize": true,
                 "canvasVisibility": "preview",
                 "dialogs": [
                     {
-                        "voice": "Alexa",
-                        "content": content
+                        "voice": if let Some(voice) = voice { voice } else { DEFAULT_VOICE },
+                        "content": content,
                     }
                 ],
                 "ports": [],

@@ -4,6 +4,7 @@
 #[derive(Debug)]
 pub enum Block {
     Utterance {
+        voice: Option<String>,
         content: String,
     },
     SetCommand {
