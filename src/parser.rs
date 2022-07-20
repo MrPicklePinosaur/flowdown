@@ -43,6 +43,7 @@ impl Conversation {
 
 pub struct FlowdownParser {
     conv_table: HashMap<String, Conversation>,
+    variables: Vec<String>,
     _cur_conv: String,
 }
 
@@ -52,6 +53,7 @@ impl FlowdownParser {
         // TODO insert 'main' conversation to conversation_table
         FlowdownParser {
             conv_table: HashMap::new(),
+            variables: Vec::new(),
             _cur_conv: "main".into(),
         }
     }
@@ -126,6 +128,14 @@ impl FlowdownParser {
                 info!("end command");
                 Block::EndCommand
             },
+            Rule::set_command_body => {
+                info!("set command");
+                let mut it = command_stmt.into_inner();
+                let id = it.next().unwrap().as_str().to_owned();
+                let value = it.next().unwrap().as_str().to_owned();
+                self.mention_variable(&id);
+                Block::SetCommand { id , value }
+            },
             _ => unreachable!()
         }
     }
@@ -145,6 +155,14 @@ impl FlowdownParser {
 
     fn cur_conv_mut(&mut self) -> &mut Conversation {
         self.conv_table.get_mut(&self._cur_conv).unwrap()
+    }
+
+    pub fn variables(&self) -> &Vec<String> {
+        &self.variables
+    }
+
+    fn mention_variable(&mut self, variable_name: &str) {
+        self.variables.push(variable_name.to_owned());
     }
 }
 
