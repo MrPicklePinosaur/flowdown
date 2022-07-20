@@ -4,7 +4,7 @@ use serde::Serialize;
 use serde_json::{json, Value};
 use std::collections::HashMap;
 
-use crate::{blocks::*, parser::Conversation};
+use crate::{blocks::*, parser::Dialog};
 
 const START_NODE_ID: &'static str = "start00000000000000000000";
 const DEFAULT_VOICE: &'static str = "Alexa";
@@ -13,12 +13,12 @@ pub struct VFConfig {
     pub project_name: String,
 }
 
-pub fn serialize_vf_file(config: &VFConfig, conv: &Conversation, variables: &Vec<String>) -> Value {
+pub fn serialize_vf_file(config: &VFConfig, dialog: &Dialog, variables: &Vec<String>) -> Value {
     let version_id = generate_id();
     let main_diagram_id = generate_id();
 
     let mut diagrams = json!({});
-    diagrams[&main_diagram_id] = serialize_conversation(&main_diagram_id, &version_id, conv);
+    diagrams[&main_diagram_id] = serialize_dialog(&main_diagram_id, &version_id, dialog);
 
     let mut vf_file = json!({
         "_version": "1.2",
@@ -101,7 +101,7 @@ pub fn serialize_vf_file(config: &VFConfig, conv: &Conversation, variables: &Vec
     vf_file
 }
 
-fn serialize_conversation(diagram_id: &str, version_id: &str, conv: &Conversation) -> Value {
+fn serialize_dialog(diagram_id: &str, version_id: &str, dialog: &Dialog) -> Value {
     json!({
         "_id": diagram_id,
         "offsetX": 0,
@@ -112,7 +112,7 @@ fn serialize_conversation(diagram_id: &str, version_id: &str, conv: &Conversatio
         "versionID": version_id,
         "creatorID": 0,
         "modified": 0,
-        "nodes": serialize_nodes(conv.blocks()),
+        "nodes": serialize_nodes(&dialog.blocks),
         "children": [],
         "type": "TOPIC"
     })
@@ -172,6 +172,16 @@ fn serialize_block(step_id: &str) -> Value {
 
 fn serialize_step(block: &Block) -> Value {
     let mut node = match block {
+        Block::Jump { target } => json!({
+            /* empty speak is a NOOP */
+            "type": "speak",
+            "data": {
+                "randomize": true,
+                "canvasVisibility": "preview",
+                "dialogs": [],
+                "ports": [],
+            }
+        }),
         Block::Utterance { content, voice } => json!({
             "type": "speak",
             "data": {

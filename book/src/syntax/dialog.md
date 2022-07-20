@@ -1,4 +1,4 @@
-# Conversations and Bookmarks
+# Dialog and Bookmarks
 
 a fundamental part of writing readable conversations is the ability to break
 apart conversations into reusable and contained pieces. in the canvas, this is
@@ -10,8 +10,8 @@ allowing us to package up reusable logic.
 
 our implementation is as follows.
 
-conversations are analogous to function calls, they allow us to define reusable
-blocks of conversation that we can jump to from anywhere.
+dialogs are analogous to function calls, they allow us to define reusable
+blocks of dialog that we can jump to from anywhere.
 
 ```
 @ welcome
@@ -30,8 +30,8 @@ the output is as follows
 ```
 > hello welcome to my store!
 ```
-notice how the other conversations aren't executed. when a conversation ends,
-we entire terminate (if top level conversation), or we return control to the
+notice how the other dialogs aren't executed. when a dialog ends,
+we entire terminate (if top level dialog), or we return control to the
 caller.
 ```
 @ layer1
@@ -64,7 +64,7 @@ will output
 
 bookmarks are quite like html header links. they give us an anchor to jump to,
 but don't offer any containment, when the next bookmark starts, we will start
-executing it. they are local to a conversation.
+executing it. they are local to a dialog.
 ```
 @ self intro
 
@@ -95,7 +95,7 @@ TODO: nested bookmarks with (==, ===, etc)
 
 and of course, bookmarks are scoped
 ```
-@ conversation 1
+@ dialog 1
 
     jump to:
     * bookmark 1 -> bookmark 1
@@ -107,7 +107,7 @@ and of course, bookmarks are scoped
 
     = bookmark 2
 
-@ conversation 2
+@ dialog 2
 
     = bookmark 2
 

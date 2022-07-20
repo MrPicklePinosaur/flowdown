@@ -9,14 +9,14 @@ diagram = {
 }
 
 stmt = {
-    conversation_stmt|command_stmt|utterance_stmt
+    dialog_stmt|bookmark_stmt|command_stmt|jump_stmt|utterance_stmt
 }
 
-conversation_stmt = {
+dialog_stmt = {
     "@" ~ ID
 }
 
-topic_stmt = {
+bookmark_stmt = {
     "=" ~ ID
 }
 
@@ -40,7 +40,7 @@ choice_stmt = {
     choice_line ~ (NEWLINE ~ choice_line)*
 }
 choice_line = {
-    "*" ~ choice_content ~ jump_block?
+    "*" ~ choice_content ~ jump_stmt?
 }
 choice_content = {
     ASCII_ALPHANUMERIC+
@@ -56,11 +56,11 @@ utterance_voice = @{
     (ASCII_ALPHANUMERIC|"-")+
 }
 
-jump_block = {
-    "->" ~ (conversation_identifier|topic_identifier)
+jump_stmt = {
+    "->" ~ (dialog_identifier|topic_identifier)
 }
 
-conversation_identifier = {
+dialog_identifier = {
     "@" ~ ID
 }
 topic_identifier = {
