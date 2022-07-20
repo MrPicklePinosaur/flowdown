@@ -36,7 +36,7 @@ impl Conversation {
     pub fn new() -> Self {
         Conversation {
             bookmark_table: HashMap::new(),
-            blocks: Vec::new()
+            blocks: Vec::new(),
         }
     }
 }

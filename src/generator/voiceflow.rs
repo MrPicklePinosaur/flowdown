@@ -6,6 +6,8 @@ use serde_json::{json, Value};
 
 use crate::{blocks::*, parser::Conversation};
 
+const START_NODE_ID: &'static str = "start00000000000000000000";
+
 pub fn generate_id() -> String {
     use rand::{seq::SliceRandom, Rng, thread_rng};
 
@@ -126,7 +128,9 @@ fn serialize_conversation(diagram_id: &str, version_id: &str, conv: &Conversatio
 }
 
 fn serialize_blocks(blocks: &Vec<Block>) -> Value {
-    let mut nodes = json!({});
+    let mut nodes = json!({
+        START_NODE_ID: start_block()
+    });
 
     let mut prev_node: Option<String> = None;
     for block in blocks.iter() {
@@ -140,21 +144,26 @@ fn serialize_blocks(blocks: &Vec<Block>) -> Value {
         }
 
         nodes[&block_id] = new_block; // TODO pretty bad to clone this
-
         prev_node = Some(block_id);
     }
 
     nodes
 }
 
+fn start_block() -> Value {
+    json!({
+        "nodeID": START_NODE_ID,
+        "type": "start",
+        "data": {
+            "steps": [],
+            "ports": []
+        },
+        "coords": [0, 0],
+    })
+}
+
 fn serialize_block(block: &Block) -> Value {
     let mut node = match block {
-        Block::Start => json!({
-            "type": "start",
-            "data": {
-                "ports": [],
-            }
-        }),
         Block::Utterance { content } => json!({
             "type": "speak",
             "data": {
