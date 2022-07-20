@@ -65,6 +65,11 @@ Then to run
 $ just run
 ```
 
+To read the documentation / language specification locally:
+```
+$ just book
+```
+
 ## RESOURCES/RESEARCH
 
 some resources that were used in the making of this project.

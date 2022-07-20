@@ -12,3 +12,6 @@ devsetup:
 
 format:
     cargo fmt --all
+
+book:
+    mdbook serve book --open
