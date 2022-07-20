@@ -26,17 +26,21 @@ struct DialogBuilder {
 
 impl DialogBuilder {
     // actual bookmark definition
-    fn define_bookmark(&mut self, bookmark_name: &str) -> u32 {
+    fn define_bookmark(&mut self, bookmark_name: &str) -> Result<u32> {
         let line_number = self.blocks.len() as u32;
-        if self
-            .bookmark_table
-            .insert(bookmark_name.to_owned(), Some(line_number))
-            .is_some()
-        {
-            // TODO should error if already exist
+
+        // check if bookmark already defined
+        if let Some(v) = self.bookmark_table.get(bookmark_name) {
+            if v.is_some() {
+                return Err(FlowdownError::BookmarkAlreadyDefined(
+                    bookmark_name.to_owned(),
+                ));
+            }
         }
+        self.bookmark_table
+            .insert(bookmark_name.to_owned(), Some(line_number));
         info!("bookmark added at line {}", line_number);
-        line_number
+        Ok(line_number)
     }
 
     // reference a bookmark without defining it
@@ -111,34 +115,37 @@ impl ConversationBuilder {
         }
     }
 
-    pub fn parse(&mut self, input: &str) {
+    pub fn parse(&mut self, input: &str) -> Result<()> {
         let parsed = Lexer::parse(Rule::diagram, input)
             .expect("unsuccessful parse")
             .next()
             .unwrap();
-        self.parse_diagram(parsed);
+        self.parse_diagram(parsed)?;
+        Ok(())
     }
 
-    fn parse_diagram(&mut self, pair: Pair<Rule>) {
+    fn parse_diagram(&mut self, pair: Pair<Rule>) -> Result<()> {
         assert!(pair.as_rule() == Rule::diagram);
 
         for line in pair.into_inner() {
             if line.as_rule() == Rule::stmt {
-                self.parse_stmt(line);
+                self.parse_stmt(line)?;
             }
         }
+
+        Ok(())
     }
 
-    fn parse_stmt(&mut self, pair: Pair<Rule>) {
+    fn parse_stmt(&mut self, pair: Pair<Rule>) -> Result<()> {
         assert!(pair.as_rule() == Rule::stmt);
 
         let mut it = pair.into_inner();
         let stmt = it.next().unwrap();
 
         if stmt.as_rule() == Rule::dialog_stmt {
-            self.parse_dialog_stmt(stmt);
+            self.parse_dialog_stmt(stmt)?;
         } else if stmt.as_rule() == Rule::bookmark_stmt {
-            self.parse_bookmark_stmt(stmt);
+            self.parse_bookmark_stmt(stmt)?;
         } else {
             // these all evaluate to blocks
             let block = match stmt.as_rule() {
@@ -149,25 +156,28 @@ impl ConversationBuilder {
             };
             self.cur_dialog_mut().blocks.push(block);
         }
+        Ok(())
     }
 
-    fn parse_dialog_stmt(&mut self, pair: Pair<Rule>) {
+    fn parse_dialog_stmt(&mut self, pair: Pair<Rule>) -> Result<()> {
         assert!(pair.as_rule() == Rule::dialog_stmt);
 
         let mut it = pair.into_inner();
         let id = it.next().unwrap().as_str();
         info!("dialog_stmt {}", id);
 
-        self.new_dialog(id);
+        self.new_dialog(id)?;
+        Ok(())
     }
 
-    fn parse_bookmark_stmt(&mut self, pair: Pair<Rule>) {
+    fn parse_bookmark_stmt(&mut self, pair: Pair<Rule>) -> Result<()> {
         assert!(pair.as_rule() == Rule::bookmark_stmt);
 
         let mut it = pair.into_inner();
         let id = it.next().unwrap().as_str();
         info!("bookmark {}", id);
-        self.cur_dialog_mut().define_bookmark(id);
+        self.cur_dialog_mut().define_bookmark(id)?;
+        Ok(())
     }
 
     fn parse_command_stmt(&mut self, pair: Pair<Rule>) -> Block {
@@ -229,13 +239,13 @@ impl ConversationBuilder {
         }
     }
 
-    fn new_dialog(&mut self, name: &str) {
+    fn new_dialog(&mut self, name: &str) -> Result<()> {
         if self.dialog_table.contains_key(name) {
-            // TODO should error
-            return;
+            return Err(FlowdownError::DialogAlreadyDefined(name.to_owned()));
         }
         self.dialog_table.insert(name.into(), DialogBuilder::new());
         self._cur_dialog = name.into();
+        Ok(())
     }
 
     fn cur_dialog(&self) -> &DialogBuilder {

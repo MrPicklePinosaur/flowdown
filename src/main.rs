@@ -22,14 +22,13 @@ const INPUT: &str = r#"
 
 > goodbye world
 
-
 "#;
 
 fn main() {
     env_logger::builder().format_timestamp(None).init();
 
     let mut conv_builder = ConversationBuilder::new();
-    conv_builder.parse(INPUT);
+    conv_builder.parse(INPUT).unwrap();
     let conv = conv_builder.build().unwrap();
 
     debug!("{:?}", conv.dialog_table);

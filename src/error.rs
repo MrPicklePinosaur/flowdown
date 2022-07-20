@@ -6,4 +6,8 @@ pub type Result<T> = std::result::Result<T, FlowdownError>;
 pub enum FlowdownError {
     #[error("undefined bookmarks: {0:?}")]
     UndefinedBookmark(Vec<String>),
+    #[error("bookmark defined more than once {0}")]
+    BookmarkAlreadyDefined(String),
+    #[error("dialog defined more than once {0}")]
+    DialogAlreadyDefined(String),
 }

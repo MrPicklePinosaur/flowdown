@@ -70,6 +70,13 @@ To read the documentation / language specification locally:
 $ just book
 ```
 
+## TODO / PLANNED FEATURES
+
+- [ ] vim syntax highlight
+- [ ] cli
+- [ ] support for external files (audio, code)
+- [ ] project configuration toml
+
 ## RESOURCES/RESEARCH
 
 some resources that were used in the making of this project.
