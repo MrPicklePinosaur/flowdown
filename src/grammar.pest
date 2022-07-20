@@ -21,7 +21,7 @@ topic_stmt = {
 }
 
 command_stmt = {
-    "[" ~ (end_command_body|set_command_body) ~ "]"
+    "[" ~ (end_command_body|set_command_body|capture_command_body) ~ "]"
 }
 end_command_body = {
     "end"

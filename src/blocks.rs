@@ -7,8 +7,11 @@ pub enum Block {
         content: String,
     },
     SetCommand {
-        id: String,
+        variable: String,
         value: String,
+    },
+    CaptureCommand {
+        variable: String,
     },
     EndCommand,
 }
