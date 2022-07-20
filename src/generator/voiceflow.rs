@@ -8,15 +8,6 @@ use crate::{blocks::*, parser::Conversation};
 
 const START_NODE_ID: &'static str = "start00000000000000000000";
 
-pub fn generate_id() -> String {
-    use rand::{seq::SliceRandom, Rng, thread_rng};
-
-    const ID_LEN: u32 = 24;
-    let alphabet: Vec<char> = ('0'..='9').chain('a'..='f').collect();
-
-    (0..ID_LEN).map(|_| alphabet.choose(&mut thread_rng()).unwrap()).collect::<String>()
-}
-
 pub struct VFConfig {
     pub project_name: String
 }
@@ -121,30 +112,37 @@ fn serialize_conversation(diagram_id: &str, version_id: &str, conv: &Conversatio
         "versionID": version_id,
         "creatorID": 0,
         "modified": 0,
-        "nodes": serialize_blocks(conv.blocks()),
+        "nodes": serialize_nodes(conv.blocks()),
         "children": [],
         "type": "TOPIC"
     })
 }
 
-fn serialize_blocks(blocks: &Vec<Block>) -> Value {
+fn serialize_nodes(blocks: &Vec<Block>) -> Value {
+    let start_node = start_block();
+    let start_node_id = get_node_id(&start_node).unwrap();
     let mut nodes = json!({
-        START_NODE_ID: start_block()
+        &start_node_id: start_node
     });
 
-    let mut prev_node: Option<String> = None;
+    let mut prev_node_id: String = start_node_id.to_owned();
     for block in blocks.iter() {
-        let mut new_block = serialize_block(block);
-        let block_id = new_block["nodeID"].as_str().unwrap().to_owned();
+        let mut new_step = serialize_step(block);
+        let step_id = get_node_id(&new_step).unwrap();
 
-        if let Some(node_id) = prev_node {
-            if let Value::Array(ports) = &mut new_block["data"]["ports"] {
-                ports.push(serialize_port(&node_id));
-            }
+        // make previous node point to the new node
+        if let Value::Array(ports) = &mut nodes[&prev_node_id]["data"]["ports"] {
+            ports.push(serialize_port(&step_id));
         }
 
-        nodes[&block_id] = new_block; // TODO pretty bad to clone this
-        prev_node = Some(block_id);
+        nodes[&step_id] = new_step; // TODO pretty bad to clone this
+
+        // create the block for the step
+        let new_block = serialize_block(&step_id);
+        let block_id = get_node_id(&new_block).unwrap();
+        nodes[&block_id] = new_block;
+
+        prev_node_id = step_id;
     }
 
     nodes
@@ -162,7 +160,19 @@ fn start_block() -> Value {
     })
 }
 
-fn serialize_block(block: &Block) -> Value {
+fn serialize_block(step_id: &str) -> Value {
+    json!({
+        "nodeID": generate_id(),
+        "type": "block",
+        "data": {
+            "name": "",
+            "steps": [step_id]
+        },
+        "coords": [0, 0]
+    })
+}
+
+fn serialize_step(block: &Block) -> Value {
     let mut node = match block {
         Block::Utterance { content } => json!({
             "type": "speak",
@@ -199,4 +209,21 @@ fn serialize_port(target: &str) -> Value {
             "points": []
         }
     })
+}
+
+fn generate_id() -> String {
+    use rand::{seq::SliceRandom, Rng, thread_rng};
+
+    const ID_LEN: u32 = 24;
+    let alphabet: Vec<char> = ('0'..='9').chain('a'..='f').collect();
+
+    (0..ID_LEN).map(|_| alphabet.choose(&mut thread_rng()).unwrap()).collect::<String>()
+}
+
+fn get_node_id(value: &Value) -> Option<String> {
+    if let Value::String(id) = &value["nodeID"] {
+        Some(id.clone())
+    } else {
+        None
+    }
 }

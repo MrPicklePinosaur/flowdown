@@ -12,7 +12,8 @@ use crate::generator::voiceflow::*;
 const INPUT: &str = r#"
 
 @ conversation1
-
+> hello world
+> goodbye world
 
 "#;
 
