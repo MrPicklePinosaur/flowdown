@@ -30,8 +30,6 @@ fn main() {
     println!("{:?}", parser);
 
     let conv = parser.cur_conv();
-    for block in conv.blocks().iter() {
-        println!("block {}", serialize_block(block));
-    }
+    println!("{}", serialize_blocks(conv.blocks()));
 }
 
