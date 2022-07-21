@@ -349,6 +349,41 @@ impl VFCompiler {
                     "ports": [],
                 },
             }),
+            Block::IfCommand { operator, op1, op2 } => {
+                let from_operand = |op: &Operand| match op {
+                    Operand::Variable(value) => json!({
+                        "type": "variable",
+                        "value": value,
+                    }),
+                    Operand::Literal(value) => json!({
+                        "type": "value",
+                        "value": value,
+                    }),
+                };
+
+                json!({
+                    "nodeID": generate_id(),
+                    "type": "ifV2",
+                    "data": {
+                        "expressions": [
+                            {
+                                "type": None as Option<String>,
+                                "name": "",
+                                "value": [
+                                    {
+                                        "logicInterface": "variable",
+                                        "type": operator.to_string(),
+                                        "value": [
+                                            from_operand(op1),
+                                            from_operand(op2),
+                                        ]
+                                    }
+                                ]
+                            }
+                        ],
+                    },
+                })
+            }
         };
 
         node

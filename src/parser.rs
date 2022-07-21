@@ -226,6 +226,32 @@ impl ConversationBuilder {
 
                 Ok(Block::CodeCommand { body })
             }
+            Rule::if_command_body => {
+                let to_operand = |pair: Pair<Rule>| match pair.as_rule() {
+                    Rule::variable_identifier => {
+                        let id = strip_variable(pair.as_str());
+                        Operand::Variable(id.to_owned())
+                    }
+                    Rule::string_literal => {
+                        let literal = strip_string_literal(pair.as_str());
+                        Operand::Literal(literal.to_owned())
+                    }
+                    _ => unreachable!(),
+                };
+
+                let to_operator = |pair: Pair<Rule>| match pair.as_str() {
+                    "==" => Operator::Equals,
+                    "!=" => Operator::NotEquals,
+                    _ => unreachable!(),
+                };
+
+                let mut it = command_stmt.into_inner().next().unwrap().into_inner();
+                let op1 = to_operand(it.next().unwrap());
+                let operator = to_operator(it.next().unwrap());
+                let op2 = to_operand(it.next().unwrap());
+
+                Ok(Block::IfCommand { operator, op1, op2 })
+            }
             _ => unreachable!(),
         }
     }

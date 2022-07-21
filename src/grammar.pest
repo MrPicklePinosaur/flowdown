@@ -21,7 +21,7 @@ bookmark_stmt = {
 }
 
 command_stmt = {
-    "[" ~ (end_command_body|set_command_body|capture_command_body|code_command_body) ~ "]"
+    "[" ~ (end_command_body|set_command_body|capture_command_body|code_command_body|if_command_body) ~ "]"
 }
 end_command_body = {
     "end"
@@ -40,7 +40,10 @@ if_command_body = {
 }
 
 conditional = {
-    ("=="|"!=")
+    (variable_identifier|string_literal) ~ operator ~ (variable_identifier|string_literal)
+}
+operator = {
+    "=="|"!="
 }
 
 choice_stmt = {

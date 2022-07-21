@@ -14,8 +14,7 @@ use log::{debug, info};
 
 const INPUT: &str = r#"
 
-[set $name "daniel"]
-[capture $name]
+[if $name == "daniel"]
 
 "#;
 
