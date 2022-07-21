@@ -21,19 +21,19 @@ bookmark_stmt = {
 }
 
 command_stmt = {
-    "[" ~ (end_command_body|set_command_body|capture_command_body) ~ "]"
+    "[" ~ (end_command_body|set_command_body|capture_command_body|code_command_body) ~ "]"
 }
 end_command_body = {
     "end"
 }
-code_command_body = @{
-    "code" ~ WHITESPACE+ ~ js_file_name
+set_command_body = {
+    "set" ~ "$" ~ ID ~ QUOTATION_MARK ~ SPACE_ID ~ QUOTATION_MARK
 }
 capture_command_body = {
     "capture" ~ "$" ~ ID
 }
-set_command_body = {
-    "set" ~ "$" ~ ID ~ QUOTATION_MARK ~ SPACE_ID ~ QUOTATION_MARK
+code_command_body = {
+    "code" ~ js_file_name
 }
 
 choice_stmt = {
@@ -47,7 +47,7 @@ choice_content = {
 }
 
 utterance_stmt = {
-    ">" ~ utterance_content ~ ( "#" ~ utterance_voice)?
+    utterance_content ~ ( "#" ~ utterance_voice)?
 }
 utterance_content = {
     ASCII_ALPHANUMERIC+

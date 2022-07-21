@@ -4,8 +4,8 @@ use pest::{
     Parser,
 };
 use serde::ser::Error;
-use std::collections::HashMap;
 use std::fmt::Debug;
+use std::{collections::HashMap, fs};
 
 use crate::{blocks::*, error::*};
 
@@ -149,7 +149,7 @@ impl ConversationBuilder {
         } else {
             // these all evaluate to blocks
             let block = match stmt.as_rule() {
-                Rule::command_stmt => self.parse_command_stmt(stmt),
+                Rule::command_stmt => self.parse_command_stmt(stmt)?,
                 Rule::jump_stmt => self.parse_jump_stmt(stmt),
                 Rule::utterance_stmt => self.parse_utterance_stmt(stmt),
                 _ => unreachable!(),
@@ -180,7 +180,7 @@ impl ConversationBuilder {
         Ok(())
     }
 
-    fn parse_command_stmt(&mut self, pair: Pair<Rule>) -> Block {
+    fn parse_command_stmt(&mut self, pair: Pair<Rule>) -> Result<Block> {
         assert!(pair.as_rule() == Rule::command_stmt);
 
         let mut it = pair.into_inner();
@@ -188,7 +188,7 @@ impl ConversationBuilder {
         match command_stmt.as_rule() {
             Rule::end_command_body => {
                 info!("end command");
-                Block::EndCommand
+                Ok(Block::EndCommand)
             }
             Rule::set_command_body => {
                 info!("set command");
@@ -196,14 +196,30 @@ impl ConversationBuilder {
                 let variable = it.next().unwrap().as_str().to_owned();
                 let value = it.next().unwrap().as_str().to_owned();
                 self.mention_variable(&variable);
-                Block::SetCommand { variable, value }
+                Ok(Block::SetCommand { variable, value })
             }
             Rule::capture_command_body => {
                 info!("capture command");
                 let mut it = command_stmt.into_inner();
                 let variable = it.next().unwrap().as_str().to_owned();
                 self.mention_variable(&variable);
-                Block::CaptureCommand { variable }
+                Ok(Block::CaptureCommand { variable })
+            }
+            Rule::code_command_body => {
+                use std::fs::read_to_string;
+
+                // attempt to read contents of file
+                let code_path = command_stmt
+                    .into_inner()
+                    .next()
+                    .unwrap()
+                    .as_str()
+                    .to_owned();
+                info!("code command: {}", code_path);
+                let body = read_to_string(&code_path)
+                    .map_err(|_| FlowdownError::CannotReadCodeFile(code_path))?;
+
+                Ok(Block::CodeCommand { body })
             }
             _ => unreachable!(),
         }

@@ -22,5 +22,8 @@ pub enum Block {
     CaptureCommand {
         variable: String,
     },
+    CodeCommand {
+        body: String,
+    },
     EndCommand,
 }

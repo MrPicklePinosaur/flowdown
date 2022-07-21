@@ -10,4 +10,6 @@ pub enum FlowdownError {
     BookmarkAlreadyDefined(String),
     #[error("dialog defined more than once {0}")]
     DialogAlreadyDefined(String),
+    #[error("cannot read source code file {0}")]
+    CannotReadCodeFile(String),
 }
