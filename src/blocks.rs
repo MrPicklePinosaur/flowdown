@@ -1,6 +1,6 @@
 // intermediate representation
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum JumpTarget {
     Bookmark(String),
     Dialog(String),
