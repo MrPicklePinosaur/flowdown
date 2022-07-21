@@ -8,11 +8,20 @@ use std::{collections::HashMap, hash::Hash};
 use crate::{blocks::*, parser::*};
 
 const START_NODE_ID: &'static str = "start00000000000000000000";
-const DEFAULT_VOICE: &'static str = "Alexa";
 const ENTRY_DIALOG: &'static str = "main";
 
 pub struct VFConfig {
     pub project_name: String,
+    pub default_voice: String,
+}
+
+impl Default for VFConfig {
+    fn default() -> Self {
+        VFConfig {
+            project_name: "Untitled".into(),
+            default_voice: "Alexa".into(),
+        }
+    }
 }
 
 pub struct VFCompiler {
@@ -109,7 +118,7 @@ impl VFCompiler {
                          "locales": [
                              "en-US"
                          ],
-                         "defaultVoice": DEFAULT_VOICE,
+                         "defaultVoice": self.config.default_voice,
                      },
                      "publishing": {},
                      "platform": "voice_default"
@@ -254,7 +263,7 @@ impl VFCompiler {
                                 "canvasVisibility": "preview",
                                 "dialogs": [
                                     {
-                                        "voice": DEFAULT_VOICE,
+                                        "voice": self.config.default_voice,
                                         "content": "",
                                     }
                                 ],
@@ -286,7 +295,7 @@ impl VFCompiler {
                     "canvasVisibility": "preview",
                     "dialogs": [
                         {
-                            "voice": if let Some(voice) = voice { voice } else { DEFAULT_VOICE },
+                            "voice": if let Some(voice) = voice { voice } else { &self.config.default_voice },
                             "content": content,
                         }
                     ],

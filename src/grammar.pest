@@ -27,13 +27,20 @@ end_command_body = {
     "end"
 }
 set_command_body = {
-    "set" ~ "$" ~ ID ~ QUOTATION_MARK ~ SPACE_ID ~ QUOTATION_MARK
+    "set" ~ variable_identifier ~ string_literal
 }
 capture_command_body = {
-    "capture" ~ "$" ~ ID
+    "capture" ~ variable_identifier
 }
 code_command_body = {
     "code" ~ js_file_name
+}
+if_command_body = {
+    "if" ~ conditional
+}
+
+conditional = {
+    ("=="|"!=")
 }
 
 choice_stmt = {
@@ -66,13 +73,19 @@ dialog_identifier = {
 bookmark_identifier = {
     ID
 }
+variable_identifier = @{
+    "$" ~ ID
+}
+string_literal = @{
+    QUOTATION_MARK ~ SPACE_ID ~ QUOTATION_MARK
+}
 
 js_file_name = @{
     ASCII_ALPHANUMERIC+ ~ ".js"    
 }
 
-SPACE_ID = {
-    ASCII_ALPHANUMERIC+
+SPACE_ID = @{
+    (ASCII_ALPHANUMERIC|WHITESPACE)+
 }
 
 ID = @{

@@ -193,17 +193,22 @@ impl ConversationBuilder {
             Rule::set_command_body => {
                 info!("set command");
                 let mut it = command_stmt.into_inner();
-                let variable = it.next().unwrap().as_str().to_owned();
-                let value = it.next().unwrap().as_str().to_owned();
+                let variable = strip_variable(it.next().unwrap().as_str());
+                let value = strip_string_literal(it.next().unwrap().as_str());
                 self.mention_variable(&variable);
-                Ok(Block::SetCommand { variable, value })
+                Ok(Block::SetCommand {
+                    variable: variable.to_owned(),
+                    value: value.to_owned(),
+                })
             }
             Rule::capture_command_body => {
                 info!("capture command");
                 let mut it = command_stmt.into_inner();
-                let variable = it.next().unwrap().as_str().to_owned();
+                let variable = strip_variable(it.next().unwrap().as_str());
                 self.mention_variable(&variable);
-                Ok(Block::CaptureCommand { variable })
+                Ok(Block::CaptureCommand {
+                    variable: variable.to_owned(),
+                })
             }
             Rule::code_command_body => {
                 use std::fs::read_to_string;
@@ -310,4 +315,18 @@ impl Debug for ConversationBuilder {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_map().entries(self.dialog_table.iter()).finish()
     }
+}
+
+fn strip_variable(variable: &str) -> &str {
+    assert!(variable.starts_with("$"));
+    variable.strip_prefix("$").unwrap()
+}
+
+fn strip_string_literal(string_literal: &str) -> &str {
+    assert!(string_literal.starts_with("\"") && string_literal.ends_with("\""));
+    string_literal
+        .strip_prefix("\"")
+        .unwrap()
+        .strip_suffix("\"")
+        .unwrap()
 }
