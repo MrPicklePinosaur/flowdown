@@ -16,7 +16,10 @@ const INPUT: &str = r#"
 > hello world # yue-HK-standard-B
 [set $counter '1']
 [capture $firstName]
+= mybookmark
 > goodbye world
+-> @dialog1
+-> mybookmark
 
 @ dialog1
     > hello dialog1

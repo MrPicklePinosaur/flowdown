@@ -57,13 +57,13 @@ utterance_voice = @{
 }
 
 jump_stmt = {
-    "->" ~ (dialog_identifier|topic_identifier)
+    "->" ~ (dialog_identifier|bookmark_identifier)
 }
 
 dialog_identifier = {
     "@" ~ ID
 }
-topic_identifier = {
+bookmark_identifier = {
     ID
 }
 

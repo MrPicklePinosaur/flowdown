@@ -14,19 +14,6 @@ pub struct VFConfig {
     pub project_name: String,
 }
 
-// some state data passed during compilation
-/*
-struct State {
-    diagram_name: String,
-}
-
-impl State {
-    fn is_main(&self) -> bool {
-
-    }
-}
-*/
-
 pub struct VFCompiler {
     config: VFConfig,
     // map from dialog name to diagram id
@@ -236,16 +223,28 @@ impl VFCompiler {
 
     fn serialize_step(&mut self, block: &Block) -> Value {
         let mut node = match block {
-            Block::Jump { target } => json!({
-                /* empty speak is a NOOP */
-                "type": "speak",
-                "data": {
-                    "randomize": true,
-                    "canvasVisibility": "preview",
-                    "dialogs": [],
-                    "ports": [],
+            Block::Jump { target } => {
+                match target {
+                    JumpTarget::Bookmark(bookmark_id) => json!({
+                        /* empty speak is a NOOP */
+                        "type": "speak",
+                        "data": {
+                            "randomize": true,
+                            "canvasVisibility": "preview",
+                            "dialogs": [],
+                            "ports": [],
+                        }
+                    }),
+                    JumpTarget::Dialog(dialog_id) => json!({
+                        "type": "component",
+                        "data": {
+                            // "diagramID":
+                            "variableMap": None as Option<String>,
+                            "ports": [],
+                        }
+                    }),
                 }
-            }),
+            }
             Block::Utterance { content, voice } => json!({
                 "type": "speak",
                 "data": {

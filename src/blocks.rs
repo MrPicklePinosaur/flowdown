@@ -1,9 +1,15 @@
 // intermediate representation
 
 #[derive(Debug)]
+pub enum JumpTarget {
+    Bookmark(String),
+    Dialog(String),
+}
+
+#[derive(Debug)]
 pub enum Block {
     Jump {
-        target: String,
+        target: JumpTarget,
     },
     Utterance {
         voice: Option<String>,
