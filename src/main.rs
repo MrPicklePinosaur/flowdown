@@ -14,14 +14,9 @@ use log::{debug, info};
 
 const INPUT: &str = r#"
 
-> line 1
-> line 2
--> jumpforward
-> line 3
-> line 4
-= jumpforward
-> line 5
-> line 6
+hello world
+[code hello.js]
+goodbye world
 
 "#;
 

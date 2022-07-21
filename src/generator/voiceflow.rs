@@ -332,6 +332,14 @@ impl VFCompiler {
                     "ports": []
                 },
             }),
+            Block::CodeCommand { body } => json!({
+                "nodeID": generate_id(),
+                "type": "code",
+                "data": {
+                    "code": body,
+                    "ports": [],
+                },
+            }),
         };
 
         node
