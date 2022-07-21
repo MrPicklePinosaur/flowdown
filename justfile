@@ -2,7 +2,7 @@
 default: out
 
 out:
-    cargo run 1> out.vf
+    cargo run -- -p -o out.vf
 
 debug:
     RUST_LOG=info,debug cargo run
