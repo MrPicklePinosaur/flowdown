@@ -2,7 +2,7 @@
 
 use serde::Serialize;
 use serde_json::{json, Value};
-use std::collections::HashMap;
+use std::{collections::HashMap, hash::Hash};
 
 use crate::{blocks::*, parser::*};
 
@@ -27,39 +27,62 @@ impl State {
 }
 */
 
-pub struct VFCompiler {}
+pub struct VFCompiler {
+    config: VFConfig,
+    // map from dialog name to diagram id
+    dialog_symbols: HashMap<String, String>,
+    // map from (dialog name, line number) to block id
+    block_symbols: HashMap<(String, u32), String>,
+}
+
+struct State {
+    dialog_name: String,
+}
+
+impl State {
+    fn is_main(&self) -> bool {
+        self.dialog_name.eq(ENTRY_DIALOG)
+    }
+}
 
 impl VFCompiler {
-    pub fn new() -> Self {
-        VFCompiler {}
+    pub fn new(config: VFConfig) -> Self {
+        VFCompiler {
+            config,
+            dialog_symbols: HashMap::new(),
+            block_symbols: HashMap::new(),
+        }
     }
 
-    pub fn serialize_vf_file(
-        &mut self,
-        config: &VFConfig,
-        conv: &Conversation,
-        variables: &Vec<String>,
-    ) -> Value {
+    fn main_diagram_id(&self) -> &str {
+        self.dialog_symbols.get(ENTRY_DIALOG).unwrap()
+    }
+
+    fn diagram_id(&self, dialog_name: &str) -> &str {
+        // danger unwrapping?
+        self.dialog_symbols.get(dialog_name).unwrap()
+    }
+
+    pub fn serialize_vf_file(&mut self, conv: &Conversation, variables: &Vec<String>) -> Value {
         let version_id = generate_id();
 
+        // compile each diagram
         let mut diagrams = json!({});
-        let mut main_diagram_id = String::new();
         for (name, dialog) in conv.dialog_table.iter() {
             let id = generate_id();
+            self.dialog_symbols.insert(name.to_owned(), id.to_owned());
 
-            // keep track of the id of the main diagram
-            if name.eq(ENTRY_DIALOG) {
-                main_diagram_id = id.to_owned();
-            }
-
-            diagrams[&id] = self.serialize_dialog(name, &id, &version_id, dialog);
+            let new_state = State {
+                dialog_name: name.to_owned(),
+            };
+            diagrams[&id] = self.serialize_dialog(&new_state, &version_id, dialog);
         }
 
         let mut vf_file = json!({
             "_version": "1.2",
             "project": {
                 "_id": generate_id(),
-                "name": config.project_name,
+                "name": self.config.project_name,
                 "teamID": "",
                 "devVersion": version_id,
                 "platform": "general",
@@ -95,13 +118,13 @@ impl VFCompiler {
                 "projectID": generate_id(),
                 "manualSave": false,
                 "autoSaveFromRestore": false,
-                "rootDiagramID": main_diagram_id,
+                "rootDiagramID": self.main_diagram_id(),
                 "creatorID": 0,
                 "_version": 2.2,
                 "components": [],
                 "topics": [
                     {
-                        "sourceID": main_diagram_id,
+                        "sourceID": self.main_diagram_id(),
                          "type": "DIAGRAM"
                     }
                 ],
@@ -119,7 +142,7 @@ impl VFCompiler {
                     "context": {
                         "stack": [
                             {
-                                "programID": main_diagram_id,
+                                "programID": self.main_diagram_id(),
                                 "storage": {},
                                 "variables": {}
                             }
@@ -136,26 +159,20 @@ impl VFCompiler {
         vf_file
     }
 
-    fn serialize_dialog(
-        &mut self,
-        diagram_name: &str,
-        diagram_id: &str,
-        version_id: &str,
-        dialog: &Dialog,
-    ) -> Value {
+    fn serialize_dialog(&mut self, state: &State, version_id: &str, dialog: &Dialog) -> Value {
         json!({
-            "_id": diagram_id,
+            "_id": self.diagram_id(&state.dialog_name),
             "offsetX": 0,
             "offsetY": 0,
             "zoom": 100,
             "variables": [],
-            "name": if diagram_name.eq(ENTRY_DIALOG) { "ROOT" } else { diagram_name },
+            "name": if state.is_main() { "ROOT" } else { &state.dialog_name },
             "versionID": version_id,
             "creatorID": 0,
             "modified": 0,
-            "nodes": self.serialize_nodes(diagram_name, &dialog.blocks),
+            "nodes": self.serialize_nodes(&state.dialog_name, &dialog.blocks),
             "children": [],
-            "type": if diagram_name.eq(ENTRY_DIALOG) { "TOPIC" } else { "COMPONENT" }
+            "type": if state.is_main() { "TOPIC" } else { "COMPONENT" }
         })
     }
 
