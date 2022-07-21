@@ -13,14 +13,13 @@ use log::{debug, info};
 
 const INPUT: &str = r#"
 
-> hello world # yue-HK-standard-B
-[set $counter '1']
-[capture $firstName]
-> goodbye world
-
-@ dialog1
-    > hello dialog1
-
+> line 1
+> line 2
+= line3bookmark
+> line 3
+> line 4
+> line 5
+-> line3bookmark
 
 "#;
 
@@ -40,5 +39,5 @@ fn main() {
     };
 
     let mut compiler = VFCompiler::new(config);
-    println!("{}", compiler.serialize_vf_file(&conv, &conv.variables));
+    println!("{}", compiler.compile(&conv, &conv.variables));
 }

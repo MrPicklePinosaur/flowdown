@@ -213,11 +213,26 @@ impl ConversationBuilder {
         assert!(pair.as_rule() == Rule::jump_stmt);
 
         let mut it = pair.into_inner();
-        let target = it.next().unwrap().as_str().to_owned();
-        info!("jump_stmt {}", target);
-        self.cur_dialog_mut().mention_bookmark(&target);
-
-        Block::Jump { target }
+        let target = it.next().unwrap();
+        match target.as_rule() {
+            Rule::dialog_identifier => {
+                let dialog_id = target.into_inner().next().unwrap().as_str().to_owned();
+                // TODO send 'mention dialog' to catch undefined dialog errors
+                info!("jmp_stmt dialog @{}", dialog_id);
+                Block::Jump {
+                    target: JumpTarget::Dialog(dialog_id),
+                }
+            }
+            Rule::bookmark_identifier => {
+                let bookmark_id = target.as_str().to_owned();
+                self.cur_dialog_mut().mention_bookmark(&bookmark_id);
+                info!("jump_stmt bookmark {}", &bookmark_id);
+                Block::Jump {
+                    target: JumpTarget::Bookmark(bookmark_id),
+                }
+            }
+            _ => unreachable!(),
+        }
     }
 
     fn parse_utterance_stmt(&mut self, pair: Pair<Rule>) -> Block {
