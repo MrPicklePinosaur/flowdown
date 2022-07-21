@@ -35,6 +35,7 @@ pub struct VFCompiler {
     block_symbols: HashMap<(String, u32), String>,
 }
 
+// state information to pass down compilation handlers
 struct State {
     dialog_name: String,
 }
