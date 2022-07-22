@@ -230,9 +230,9 @@ impl VFCompiler {
 
             // make previous nodes point to the new node
             for (prev_node_id, prev_node_port_type) in prev_node_ids.iter() {
-                if let Value::Array(ports) = &mut nodes[&prev_node_id]["data"]["ports"] {
-                    ports.push(serialize_next_port(&root_step_id));
-                }
+                nodes[&prev_node_id]["data"]["portsV2"]["builtIn"]
+                    [prev_node_port_type.to_string()] =
+                    serialize_port(prev_node_port_type, &root_step_id);
             }
 
             for new_step in new_steps.iter() {
@@ -262,7 +262,11 @@ impl VFCompiler {
             "type": "start",
             "data": {
                 "steps": [],
-                "ports": []
+                "portsV2": {
+                    "byKey": {},
+                    "builtIn": {},
+                    "dynamic": [],
+                },
             },
             "coords": [0, 0],
         })
@@ -301,9 +305,13 @@ impl VFCompiler {
                                         "content": "",
                                     }
                                 ],
-                                "ports": [
-                                    /* to be inserted by jump relocation table */
-                                ],
+                                "portsV2": {
+                                    "byKey": {},
+                                    "builtIn": {
+                                        /* to be inserted by jump relocation table */
+                                    },
+                                    "dynamic": [],
+                                },
                             }
                         });
                         SerializedStep::new(node_id.clone(), vec![value], vec![])
@@ -316,7 +324,11 @@ impl VFCompiler {
                                 // to be inserted by jump relocation table
                                 "diagramID": "",
                                 "variableMap": None as Option<String>,
-                                "ports": [],
+                                "portsV2": {
+                                    "byKey": {},
+                                    "builtIn": {},
+                                    "dynamic": [],
+                                },
                             }
                         });
                         SerializedStep::new(node_id.clone(), vec![value], vec![])
@@ -337,7 +349,11 @@ impl VFCompiler {
                                 "content": content,
                             }
                         ],
-                        "ports": [],
+                        "portsV2": {
+                            "byKey": {},
+                            "builtIn": {},
+                            "dynamic": [],
+                        },
                     }
                 });
                 SerializedStep::new(
@@ -352,7 +368,11 @@ impl VFCompiler {
                     "nodeID": node_id,
                     "type": "end",
                     "data": {
-                        "ports": [],
+                        "portsV2": {
+                            "byKey": {},
+                            "builtIn": {},
+                            "dynamic": [],
+                        },
                     }
                 });
                 SerializedStep::new(
@@ -377,7 +397,11 @@ impl VFCompiler {
                                 "expression": value
                             }
                         ],
-                        "ports": []
+                        "portsV2": {
+                            "byKey": {},
+                            "builtIn": {},
+                            "dynamic": [],
+                        },
                     }
                 });
                 SerializedStep::new(
@@ -400,7 +424,11 @@ impl VFCompiler {
                         "noReply": null,
                         "noMatch": null,
                         "chips": null,
-                        "ports": []
+                        "portsV2": {
+                            "byKey": {},
+                            "builtIn": {},
+                            "dynamic": [],
+                        },
                     },
                 });
                 SerializedStep::new(
@@ -416,7 +444,11 @@ impl VFCompiler {
                     "type": "code",
                     "data": {
                         "code": body,
-                        "ports": [],
+                        "portsV2": {
+                            "byKey": {},
+                            "builtIn": {},
+                            "dynamic": [],
+                        },
                     },
                 });
                 SerializedStep::new(
@@ -475,22 +507,15 @@ impl VFCompiler {
                         ],
                         "portsV2": {
                             "byKey": {},
-                            "builtIn": {
-                                "else": {
-                                    "type": "else",
-                                    "target": "", // TODO use this to connect to next node
-                                    "id": generate_id(),
-                                    "data": {
-                                        "points": []
-                                    }
-                                }
-                            },
+                            "builtIn": {},
                             "dynamic": [
                                 {
                                     "type": "",
                                     "target": cond_step_id,
                                     "id": generate_id(),
-                                    "data": {}
+                                    "data": {
+                                        "points": []
+                                    }
                                 }
                             ]
                         }
@@ -523,10 +548,9 @@ impl VFCompiler {
                         .block_symbols
                         .get(&(diagram_name.to_owned(), *line_number))
                         .unwrap();
-                    block["data"]["ports"]
-                        .as_array_mut()
-                        .unwrap()
-                        .push(serialize_next_port(block_id));
+
+                    block["data"]["portsV2"]["builtIn"][PortType::Next.to_string()] =
+                        serialize_port(&PortType::Next, block_id);
                 }
                 JumpTarget::Dialog(target_name) => {
                     let jump_diagram_id = self.dialog_symbols.get(target_name).unwrap().to_owned();
@@ -576,29 +600,13 @@ impl std::fmt::Display for PortType {
     }
 }
 
-fn serialize_next_port(target: &str) -> Value {
-    /*
+fn serialize_port(port_type: &PortType, target: &str) -> Value {
     json!({
-        "byKey": {},
-        "builtIn": {
-            "next": {
-                "type": "next",
-                "target": target,
-                "id": generate_id()
-            },
-            "data": {
-                "points": []
-            }
-        },
-        "dynamic": []
-    })
-    */
-    json!({
-        "type": "next",
+        "type": port_type.to_string(),
         "target": target,
         "id": generate_id(),
         "data": {
             "points": []
-        },
+        }
     })
 }

@@ -16,11 +16,7 @@ const INPUT: &str = r#"
 
 = start
 line 1
--> bookmark
-line 2
-line 3
-line 4
-= bookmark
+* $sessions == "1": red
 line 5
 -> start
 
