@@ -52,14 +52,14 @@ struct SerializedStep {
     // newly created nodes
     new_steps: Vec<Value>,
     // new nodes that connect to the next node
-    connecting_node_ids: Vec<String>,
+    connecting_node_ids: Vec<(String, PortType)>,
 }
 
 impl SerializedStep {
     pub fn new(
         root_step_id: String,
         new_steps: Vec<Value>,
-        connecting_node_ids: Vec<String>,
+        connecting_node_ids: Vec<(String, PortType)>,
     ) -> Self {
         SerializedStep {
             root_step_id,
@@ -219,7 +219,8 @@ impl VFCompiler {
         let start_node = self.start_block(&start_node_id);
         let mut nodes = json!({ &start_node_id: start_node });
 
-        let mut prev_node_ids: Vec<String> = vec![start_node_id.to_owned()];
+        let mut prev_node_ids: Vec<(String, PortType)> =
+            vec![(start_node_id.to_owned(), PortType::Next)];
         for (line_number, block) in blocks.iter().enumerate() {
             let SerializedStep {
                 root_step_id,
@@ -228,9 +229,9 @@ impl VFCompiler {
             } = self.serialize_step(state, block);
 
             // make previous nodes point to the new node
-            for prev_node_id in prev_node_ids.iter() {
+            for (prev_node_id, prev_node_port_type) in prev_node_ids.iter() {
                 if let Value::Array(ports) = &mut nodes[&prev_node_id]["data"]["ports"] {
-                    ports.push(serialize_port(&root_step_id));
+                    ports.push(serialize_next_port(&root_step_id));
                 }
             }
 
@@ -339,7 +340,11 @@ impl VFCompiler {
                         "ports": [],
                     }
                 });
-                SerializedStep::new(node_id.clone(), vec![value], vec![node_id])
+                SerializedStep::new(
+                    node_id.clone(),
+                    vec![value],
+                    vec![(node_id, PortType::Next)],
+                )
             }
             Block::EndCommand => {
                 let node_id = generate_id();
@@ -350,7 +355,11 @@ impl VFCompiler {
                         "ports": [],
                     }
                 });
-                SerializedStep::new(node_id.clone(), vec![value], vec![node_id])
+                SerializedStep::new(
+                    node_id.clone(),
+                    vec![value],
+                    vec![(node_id, PortType::Next)],
+                )
             }
             Block::SetCommand {
                 variable: id,
@@ -371,7 +380,11 @@ impl VFCompiler {
                         "ports": []
                     }
                 });
-                SerializedStep::new(node_id.clone(), vec![value], vec![node_id])
+                SerializedStep::new(
+                    node_id.clone(),
+                    vec![value],
+                    vec![(node_id, PortType::Next)],
+                )
             }
             Block::CaptureCommand { variable } => {
                 let node_id = generate_id();
@@ -390,7 +403,11 @@ impl VFCompiler {
                         "ports": []
                     },
                 });
-                SerializedStep::new(node_id.clone(), vec![value], vec![node_id])
+                SerializedStep::new(
+                    node_id.clone(),
+                    vec![value],
+                    vec![(node_id, PortType::Next)],
+                )
             }
             Block::CodeCommand { body } => {
                 let node_id = generate_id();
@@ -402,7 +419,11 @@ impl VFCompiler {
                         "ports": [],
                     },
                 });
-                SerializedStep::new(node_id.clone(), vec![value], vec![node_id])
+                SerializedStep::new(
+                    node_id.clone(),
+                    vec![value],
+                    vec![(node_id, PortType::Next)],
+                )
             }
             Block::Choice {
                 cond: Conditional { operator, op1, op2 },
@@ -477,7 +498,7 @@ impl VFCompiler {
                 });
 
                 new_steps.push(if_value);
-                connecting_node_ids.push(if_node_id.clone());
+                connecting_node_ids.push((if_node_id.clone(), PortType::Else));
                 SerializedStep::new(if_node_id.clone(), new_steps, connecting_node_ids)
             }
         }
@@ -505,7 +526,7 @@ impl VFCompiler {
                     block["data"]["ports"]
                         .as_array_mut()
                         .unwrap()
-                        .push(serialize_port(block_id));
+                        .push(serialize_next_port(block_id));
                 }
                 JumpTarget::Dialog(target_name) => {
                     let jump_diagram_id = self.dialog_symbols.get(target_name).unwrap().to_owned();
@@ -541,13 +562,43 @@ fn get_node_id(value: &Value) -> Option<String> {
     }
 }
 
-fn serialize_port(target: &str) -> Value {
+enum PortType {
+    Next,
+    Else,
+}
+
+impl std::fmt::Display for PortType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            PortType::Next => write!(f, "next"),
+            PortType::Else => write!(f, "else"),
+        }
+    }
+}
+
+fn serialize_next_port(target: &str) -> Value {
+    /*
+    json!({
+        "byKey": {},
+        "builtIn": {
+            "next": {
+                "type": "next",
+                "target": target,
+                "id": generate_id()
+            },
+            "data": {
+                "points": []
+            }
+        },
+        "dynamic": []
+    })
+    */
     json!({
         "type": "next",
         "target": target,
         "id": generate_id(),
         "data": {
             "points": []
-        }
+        },
     })
 }
