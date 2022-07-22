@@ -404,13 +404,10 @@ impl VFCompiler {
                 });
                 SerializedStep::new(node_id.clone(), vec![value], vec![node_id])
             }
-            Block::Choice { choices } => {
-                debug!("choices {:?}", choices);
-
-                SerializedStep::new("".into(), vec![], vec![])
-            }
-            /*
-            Block::IfCommand { operator, op1, op2 } => {
+            Block::Choice {
+                cond: Conditional { operator, op1, op2 },
+                block,
+            } => {
                 let from_operand = |op: &Operand| match op {
                     Operand::Variable(value) => json!({
                         "type": "variable",
@@ -422,12 +419,19 @@ impl VFCompiler {
                     }),
                 };
 
-                let node_id = generate_id();
-                let value = json!({
-                    "nodeID": node_id,
+                // build step into conditional
+                let SerializedStep {
+                    root_step_id: cond_step_id,
+                    mut new_steps,
+                    mut connecting_node_ids,
+                } = self.serialize_step(state, block);
+
+                // build if step
+                let if_node_id = generate_id();
+                let if_value = json!({
+                    "nodeID": if_node_id,
                     "type": "ifV2",
                     "data": {
-                        "ports": [],
                         "noMatch": {
                           "type": "path",
                           "pathName": "No match"
@@ -448,11 +452,34 @@ impl VFCompiler {
                                 ]
                             }
                         ],
+                        "portsV2": {
+                            "byKey": {},
+                            "builtIn": {
+                                "else": {
+                                    "type": "else",
+                                    "target": "", // TODO use this to connect to next node
+                                    "id": generate_id(),
+                                    "data": {
+                                        "points": []
+                                    }
+                                }
+                            },
+                            "dynamic": [
+                                {
+                                    "type": "",
+                                    "target": cond_step_id,
+                                    "id": generate_id(),
+                                    "data": {}
+                                }
+                            ]
+                        }
                     },
                 });
-                SerializedStep::new(node_id.clone(), vec![value], vec![node_id])
+
+                new_steps.push(if_value);
+                connecting_node_ids.push(if_node_id.clone());
+                SerializedStep::new(if_node_id.clone(), new_steps, connecting_node_ids)
             }
-            */
         }
     }
 

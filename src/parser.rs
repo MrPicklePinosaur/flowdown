@@ -165,14 +165,13 @@ impl ConversationBuilder {
     fn parse_choice_stmt(&mut self, pair: Pair<Rule>) -> Result<Block> {
         assert!(pair.as_rule() == Rule::choice_stmt);
 
-        let mut choices = vec![];
-        for choice_line in pair.into_inner() {
-            let mut it = choice_line.into_inner();
-            let cond = self.parse_conditional(it.next().unwrap())?;
-            let block = self.parse_inline_stmt(it.next().unwrap())?;
-            choices.push(ChoiceLine { cond, block });
-        }
-        Ok(Block::Choice { choices })
+        let mut it = pair.into_inner();
+        let cond = self.parse_conditional(it.next().unwrap())?;
+        let block = self.parse_inline_stmt(it.next().unwrap())?;
+        Ok(Block::Choice {
+            cond,
+            block: Box::new(block),
+        })
     }
 
     fn parse_conditional(&mut self, pair: Pair<Rule>) -> Result<Conditional> {

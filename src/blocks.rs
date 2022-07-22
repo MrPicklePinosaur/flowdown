@@ -28,12 +28,6 @@ pub enum Operand {
 }
 
 #[derive(Debug)]
-pub struct ChoiceLine {
-    pub cond: Conditional,
-    pub block: Block,
-}
-
-#[derive(Debug)]
 pub struct Conditional {
     pub operator: Operator,
     pub op1: Operand,
@@ -61,6 +55,7 @@ pub enum Block {
     },
     EndCommand,
     Choice {
-        choices: Vec<ChoiceLine>,
+        cond: Conditional,
+        block: Box<Block>,
     },
 }

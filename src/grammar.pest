@@ -47,9 +47,6 @@ operator = {
 }
 
 choice_stmt = {
-    choice_line ~ (NEWLINE ~ choice_line)*
-}
-choice_line = {
     "*" ~ conditional ~ ":" ~ inline_stmt
 }
 
