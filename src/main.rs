@@ -14,14 +14,9 @@ use log::{debug, info};
 
 const INPUT: &str = r#"
 
-line 1
--> end
-line 2
-line 3
-line 4
-= end
-line 5
-
+choose a color
+* $color == "red": you chose red
+* $color == "blue": you chose blue
 
 "#;
 

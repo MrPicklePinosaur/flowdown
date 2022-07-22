@@ -404,7 +404,11 @@ impl VFCompiler {
                 });
                 SerializedStep::new(node_id.clone(), vec![value], vec![node_id])
             }
-            Block::Choice { choices } => SerializedStep::new("".into(), vec![], vec![]),
+            Block::Choice { choices } => {
+                debug!("choices {:?}", choices);
+
+                SerializedStep::new("".into(), vec![], vec![])
+            }
             /*
             Block::IfCommand { operator, op1, op2 } => {
                 let from_operand = |op: &Operand| match op {
