@@ -14,9 +14,14 @@ use log::{debug, info};
 
 const INPUT: &str = r#"
 
-hello world
-[code hello.js]
-goodbye world
+line 1
+-> end
+line 2
+line 3
+line 4
+= end
+line 5
+
 
 "#;
 
@@ -64,6 +69,7 @@ fn handle_compile(flagparse: FlagParse) -> Result<(), Box<dyn std::error::Error>
 
     let config = VFConfig {
         project_name: "flowdown".into(),
+        ..Default::default()
     };
 
     let mut compiler = VFCompiler::new(config);

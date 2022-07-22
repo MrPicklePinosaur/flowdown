@@ -37,3 +37,4 @@ otherwise/else clause - executes if the previously evaluated condition was false
 [otherwise $pizza_type == "pineapple"] i love pineapple pizza!
 ```
 
+[if $pizza_type == "pineapple"] -> pineapple

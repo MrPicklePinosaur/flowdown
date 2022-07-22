@@ -8,11 +8,20 @@ use std::{collections::HashMap, hash::Hash};
 use crate::{blocks::*, parser::*};
 
 const START_NODE_ID: &'static str = "start00000000000000000000";
-const DEFAULT_VOICE: &'static str = "Alexa";
 const ENTRY_DIALOG: &'static str = "main";
 
 pub struct VFConfig {
     pub project_name: String,
+    pub default_voice: String,
+}
+
+impl Default for VFConfig {
+    fn default() -> Self {
+        VFConfig {
+            project_name: "Untitled".into(),
+            default_voice: "Alexa".into(),
+        }
+    }
 }
 
 pub struct VFCompiler {
@@ -33,6 +42,30 @@ struct State {
 impl State {
     fn is_main(&self) -> bool {
         self.dialog_name.eq(ENTRY_DIALOG)
+    }
+}
+
+// return struct used by serialize step function
+struct SerializedStep {
+    // root node that connects to the previous connecting nodes
+    root_step_id: String,
+    // newly created nodes
+    new_steps: Vec<Value>,
+    // new nodes that connect to the next node
+    connecting_node_ids: Vec<String>,
+}
+
+impl SerializedStep {
+    pub fn new(
+        root_step_id: String,
+        new_steps: Vec<Value>,
+        connecting_node_ids: Vec<String>,
+    ) -> Self {
+        SerializedStep {
+            root_step_id,
+            new_steps,
+            connecting_node_ids,
+        }
     }
 }
 
@@ -109,7 +142,7 @@ impl VFCompiler {
                          "locales": [
                              "en-US"
                          ],
-                         "defaultVoice": DEFAULT_VOICE,
+                         "defaultVoice": self.config.default_voice,
                      },
                      "publishing": {},
                      "platform": "voice_default"
@@ -186,28 +219,37 @@ impl VFCompiler {
         let start_node = self.start_block(&start_node_id);
         let mut nodes = json!({ &start_node_id: start_node });
 
-        let mut prev_node_id: String = start_node_id.to_owned();
+        let mut prev_node_ids: Vec<String> = vec![start_node_id.to_owned()];
         for (line_number, block) in blocks.iter().enumerate() {
-            let mut new_step = self.serialize_step(state, block);
-            let step_id = get_node_id(&new_step).unwrap();
+            let SerializedStep {
+                root_step_id,
+                new_steps,
+                mut connecting_node_ids,
+            } = self.serialize_step(state, block);
 
-            // make previous node point to the new node
-            if let Value::Array(ports) = &mut nodes[&prev_node_id]["data"]["ports"] {
-                ports.push(serialize_port(&step_id));
+            // make previous nodes point to the new node
+            for prev_node_id in prev_node_ids.iter() {
+                if let Value::Array(ports) = &mut nodes[&prev_node_id]["data"]["ports"] {
+                    ports.push(serialize_port(&root_step_id));
+                }
             }
 
-            nodes[&step_id] = new_step; // TODO pretty bad to clone this
-            self.block_symbols.insert(
-                (state.dialog_name.to_owned(), line_number as u32),
-                step_id.to_owned(),
-            );
+            for new_step in new_steps.iter() {
+                let step_id = get_node_id(&new_step).unwrap();
+                nodes[&step_id] = new_step.clone(); // TODO pretty bad to clone this
+                self.block_symbols.insert(
+                    (state.dialog_name.to_owned(), line_number as u32),
+                    root_step_id.to_owned(),
+                );
 
-            // create the block for the step
-            let new_block = self.serialize_block(&step_id);
-            let block_id = get_node_id(&new_block).unwrap();
-            nodes[&block_id] = new_block;
+                // create the block for the step
+                let new_block = self.serialize_block(&root_step_id);
+                let block_id = get_node_id(&new_block).unwrap();
+                nodes[&block_id] = new_block;
+            }
 
-            prev_node_id = step_id;
+            prev_node_ids.clear();
+            prev_node_ids.append(&mut connecting_node_ids);
         }
 
         nodes
@@ -237,15 +279,15 @@ impl VFCompiler {
         })
     }
 
-    fn serialize_step(&mut self, state: &State, block: &Block) -> Value {
-        let mut node = match block {
+    fn serialize_step(&mut self, state: &State, block: &Block) -> SerializedStep {
+        match block {
             Block::Jump { target } => {
                 let node_id = generate_id();
                 self.jump_relocation_table
                     .insert((state.dialog_name.clone(), node_id.clone()), target.clone());
                 match target {
                     JumpTarget::Bookmark(_) => {
-                        json!({
+                        let value = json!({
                             /* empty speak is a NOOP */
                             "nodeID": node_id,
                             "type": "speak",
@@ -254,7 +296,7 @@ impl VFCompiler {
                                 "canvasVisibility": "preview",
                                 "dialogs": [
                                     {
-                                        "voice": DEFAULT_VOICE,
+                                        "voice": self.config.default_voice,
                                         "content": "",
                                     }
                                 ],
@@ -262,10 +304,11 @@ impl VFCompiler {
                                     /* to be inserted by jump relocation table */
                                 ],
                             }
-                        })
+                        });
+                        SerializedStep::new(node_id.clone(), vec![value], vec![])
                     }
                     JumpTarget::Dialog(_) => {
-                        json!({
+                        let value = json!({
                             "nodeID": node_id,
                             "type": "component",
                             "data": {
@@ -274,75 +317,136 @@ impl VFCompiler {
                                 "variableMap": None as Option<String>,
                                 "ports": [],
                             }
-                        })
+                        });
+                        SerializedStep::new(node_id.clone(), vec![value], vec![])
                     }
                 }
             }
-            Block::Utterance { content, voice } => json!({
-                "nodeID": generate_id(),
-                "type": "speak",
-                "data": {
-                    "randomize": true,
-                    "canvasVisibility": "preview",
-                    "dialogs": [
-                        {
-                            "voice": if let Some(voice) = voice { voice } else { DEFAULT_VOICE },
-                            "content": content,
-                        }
-                    ],
-                    "ports": [],
-                }
-            }),
-            Block::EndCommand => json!({
-                "nodeID": generate_id(),
-                "type": "end",
-                "data": {
-                    "ports": [],
-                }
-            }),
+            Block::Utterance { content, voice } => {
+                let node_id = generate_id();
+                let value = json!({
+                    "nodeID": node_id,
+                    "type": "speak",
+                    "data": {
+                        "randomize": true,
+                        "canvasVisibility": "preview",
+                        "dialogs": [
+                            {
+                                "voice": if let Some(voice) = voice { voice } else { &self.config.default_voice },
+                                "content": content,
+                            }
+                        ],
+                        "ports": [],
+                    }
+                });
+                SerializedStep::new(node_id.clone(), vec![value], vec![node_id])
+            }
+            Block::EndCommand => {
+                let node_id = generate_id();
+                let value = json!({
+                    "nodeID": node_id,
+                    "type": "end",
+                    "data": {
+                        "ports": [],
+                    }
+                });
+                SerializedStep::new(node_id.clone(), vec![value], vec![node_id])
+            }
             Block::SetCommand {
                 variable: id,
                 value,
-            } => json!({
-                "nodeID": generate_id(),
-                "type": "setV2",
-                "data": {
-                    "sets": [
-                        {
-                            "type": "value",
-                            "variable": id,
-                            "expression": value
-                        }
-                    ],
-                    "ports": []
-                }
-            }),
-            Block::CaptureCommand { variable } => json!({
-                "nodeID": generate_id(),
-                "type": "captureV2",
-                "data": {
-                    "intentScope": "GLOBAL",
-                    "capture": {
-                        "type": "query",
-                        "variable": variable,
+            } => {
+                let node_id = generate_id();
+                let value = json!({
+                    "nodeID": node_id,
+                    "type": "setV2",
+                    "data": {
+                        "sets": [
+                            {
+                                "type": "value",
+                                "variable": id,
+                                "expression": value
+                            }
+                        ],
+                        "ports": []
+                    }
+                });
+                SerializedStep::new(node_id.clone(), vec![value], vec![node_id])
+            }
+            Block::CaptureCommand { variable } => {
+                let node_id = generate_id();
+                let value = json!({
+                    "nodeID": node_id,
+                    "type": "captureV2",
+                    "data": {
+                        "intentScope": "GLOBAL",
+                        "capture": {
+                            "type": "query",
+                            "variable": variable,
+                        },
+                        "noReply": null,
+                        "noMatch": null,
+                        "chips": null,
+                        "ports": []
                     },
-                    "noReply": null,
-                    "noMatch": null,
-                    "chips": null,
-                    "ports": []
-                },
-            }),
-            Block::CodeCommand { body } => json!({
-                "nodeID": generate_id(),
-                "type": "code",
-                "data": {
-                    "code": body,
-                    "ports": [],
-                },
-            }),
-        };
+                });
+                SerializedStep::new(node_id.clone(), vec![value], vec![node_id])
+            }
+            Block::CodeCommand { body } => {
+                let node_id = generate_id();
+                let value = json!({
+                    "nodeID": node_id,
+                    "type": "code",
+                    "data": {
+                        "code": body,
+                        "ports": [],
+                    },
+                });
+                SerializedStep::new(node_id.clone(), vec![value], vec![node_id])
+            }
+            Block::IfCommand { operator, op1, op2 } => {
+                let from_operand = |op: &Operand| match op {
+                    Operand::Variable(value) => json!({
+                        "type": "variable",
+                        "value": value,
+                    }),
+                    Operand::Literal(value) => json!({
+                        "type": "value",
+                        "value": value,
+                    }),
+                };
 
-        node
+                let node_id = generate_id();
+                let value = json!({
+                    "nodeID": node_id,
+                    "type": "ifV2",
+                    "data": {
+                        "ports": [],
+                        "noMatch": {
+                          "type": "path",
+                          "pathName": "No match"
+                        },
+                        "expressions": [
+                            {
+                                "type": None as Option<String>,
+                                "name": "",
+                                "value": [
+                                    {
+                                        "logicInterface": "variable",
+                                        "type": operator.to_string(),
+                                        "value": [
+                                            from_operand(op1),
+                                            from_operand(op2),
+                                        ]
+                                    }
+                                ]
+                            }
+                        ],
+                    },
+                });
+                SerializedStep::new(node_id.clone(), vec![value], vec![node_id])
+            }
+        }
     }
 
     fn relocate(&mut self, vf_file: &mut Value, conv: &Conversation) {

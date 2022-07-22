@@ -193,17 +193,22 @@ impl ConversationBuilder {
             Rule::set_command_body => {
                 info!("set command");
                 let mut it = command_stmt.into_inner();
-                let variable = it.next().unwrap().as_str().to_owned();
-                let value = it.next().unwrap().as_str().to_owned();
+                let variable = strip_variable(it.next().unwrap().as_str());
+                let value = strip_string_literal(it.next().unwrap().as_str());
                 self.mention_variable(&variable);
-                Ok(Block::SetCommand { variable, value })
+                Ok(Block::SetCommand {
+                    variable: variable.to_owned(),
+                    value: value.to_owned(),
+                })
             }
             Rule::capture_command_body => {
                 info!("capture command");
                 let mut it = command_stmt.into_inner();
-                let variable = it.next().unwrap().as_str().to_owned();
+                let variable = strip_variable(it.next().unwrap().as_str());
                 self.mention_variable(&variable);
-                Ok(Block::CaptureCommand { variable })
+                Ok(Block::CaptureCommand {
+                    variable: variable.to_owned(),
+                })
             }
             Rule::code_command_body => {
                 use std::fs::read_to_string;
@@ -220,6 +225,32 @@ impl ConversationBuilder {
                     .map_err(|_| FlowdownError::CannotReadCodeFile(code_path))?;
 
                 Ok(Block::CodeCommand { body })
+            }
+            Rule::if_command_body => {
+                let to_operand = |pair: Pair<Rule>| match pair.as_rule() {
+                    Rule::variable_identifier => {
+                        let id = strip_variable(pair.as_str());
+                        Operand::Variable(id.to_owned())
+                    }
+                    Rule::string_literal => {
+                        let literal = strip_string_literal(pair.as_str());
+                        Operand::Literal(literal.to_owned())
+                    }
+                    _ => unreachable!(),
+                };
+
+                let to_operator = |pair: Pair<Rule>| match pair.as_str() {
+                    "==" => Operator::Equals,
+                    "!=" => Operator::NotEquals,
+                    _ => unreachable!(),
+                };
+
+                let mut it = command_stmt.into_inner().next().unwrap().into_inner();
+                let op1 = to_operand(it.next().unwrap());
+                let operator = to_operator(it.next().unwrap());
+                let op2 = to_operand(it.next().unwrap());
+
+                Ok(Block::IfCommand { operator, op1, op2 })
             }
             _ => unreachable!(),
         }
@@ -310,4 +341,18 @@ impl Debug for ConversationBuilder {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_map().entries(self.dialog_table.iter()).finish()
     }
+}
+
+fn strip_variable(variable: &str) -> &str {
+    assert!(variable.starts_with("$"));
+    variable.strip_prefix("$").unwrap()
+}
+
+fn strip_string_literal(string_literal: &str) -> &str {
+    assert!(string_literal.starts_with("\"") && string_literal.ends_with("\""));
+    string_literal
+        .strip_prefix("\"")
+        .unwrap()
+        .strip_suffix("\"")
+        .unwrap()
 }
