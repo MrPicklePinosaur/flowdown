@@ -70,11 +70,19 @@ To read the documentation / language specification locally:
 $ just book
 ```
 
+## EDITOR TOOLS
+
+**flowdown** comes bundled with a vim plugin. To install (for vim-plug users),
+simply add the line
+```
+Plug 'MrPicklePinosaur/flowdown', { 'rtp': 'tools/vim' }
+```
+
 ## TODO / PLANNED FEATURES
 
-- [ ] vim syntax highlight
-- [ ] cli
-- [ ] support for external files (audio, code)
+- [x] vim syntax highlight
+- [x] cli
+- [x] support for external files (audio, code)
 - [ ] project configuration toml
 - [ ] linker
 
