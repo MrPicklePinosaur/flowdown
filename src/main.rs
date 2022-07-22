@@ -15,6 +15,8 @@ use log::{debug, info};
 const INPUT: &str = r#"
 
 [if $name == "daniel"]
+[if $one == $two]
+[if "another" == $var]
 
 "#;
 

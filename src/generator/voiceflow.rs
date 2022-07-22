@@ -365,6 +365,11 @@ impl VFCompiler {
                     "nodeID": generate_id(),
                     "type": "ifV2",
                     "data": {
+                        "ports": [],
+                        "noMatch": {
+                          "type": "path",
+                          "pathName": "No match"
+                        },
                         "expressions": [
                             {
                                 "type": None as Option<String>,
