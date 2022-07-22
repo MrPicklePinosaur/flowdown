@@ -72,11 +72,10 @@ $ just book
 
 ## EDITOR TOOLS
 
-**flowdown** comes bundled with a vim plugin, `flowdown-vim`.
-
-To install (for vim-plug users), simply add the line
+**flowdown** comes bundled with a vim plugin. To install (for vim-plug users),
+simply add the line
 ```
-Plug 'MrPicklePinosaur/flowdown', { 'rtp': 'tools/flowdown-vim' }
+Plug 'MrPicklePinosaur/flowdown', { 'rtp': 'tools/vim' }
 ```
 
 ## TODO / PLANNED FEATURES
