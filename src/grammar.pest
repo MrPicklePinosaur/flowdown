@@ -9,7 +9,10 @@ diagram = {
 }
 
 stmt = {
-    dialog_stmt|bookmark_stmt|command_stmt|jump_stmt|utterance_stmt
+    dialog_stmt|bookmark_stmt|command_stmt|choice_stmt|inline_stmt
+}
+inline_stmt = {
+    command_stmt|jump_stmt|utterance_stmt
 }
 
 dialog_stmt = {
@@ -21,7 +24,7 @@ bookmark_stmt = {
 }
 
 command_stmt = {
-    "[" ~ (end_command_body|set_command_body|capture_command_body|code_command_body|if_command_body) ~ "]"
+    "[" ~ (end_command_body|set_command_body|capture_command_body|code_command_body) ~ "]"
 }
 end_command_body = {
     "end"
@@ -35,9 +38,6 @@ capture_command_body = {
 code_command_body = {
     "code" ~ js_file_name
 }
-if_command_body = {
-    "if" ~ conditional
-}
 
 conditional = {
     (variable_identifier|string_literal) ~ operator ~ (variable_identifier|string_literal)
@@ -50,14 +50,11 @@ choice_stmt = {
     choice_line ~ (NEWLINE ~ choice_line)*
 }
 choice_line = {
-    "*" ~ choice_content ~ jump_stmt?
-}
-choice_content = {
-    ASCII_ALPHANUMERIC+
+    "*" ~ conditional ~ ":" ~ inline_stmt
 }
 
 utterance_stmt = {
-    utterance_content ~ ( "#" ~ utterance_voice)?
+    utterance_content ~ ("#" ~ utterance_voice)?
 }
 utterance_content = {
     ASCII_ALPHANUMERIC+

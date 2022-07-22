@@ -139,23 +139,48 @@ impl ConversationBuilder {
     fn parse_stmt(&mut self, pair: Pair<Rule>) -> Result<()> {
         assert!(pair.as_rule() == Rule::stmt);
 
-        let mut it = pair.into_inner();
-        let stmt = it.next().unwrap();
+        let stmt = pair.into_inner().next().unwrap();
 
-        if stmt.as_rule() == Rule::dialog_stmt {
-            self.parse_dialog_stmt(stmt)?;
-        } else if stmt.as_rule() == Rule::bookmark_stmt {
-            self.parse_bookmark_stmt(stmt)?;
-        } else {
-            // these all evaluate to blocks
-            let block = match stmt.as_rule() {
-                Rule::command_stmt => self.parse_command_stmt(stmt)?,
-                Rule::jump_stmt => self.parse_jump_stmt(stmt),
-                Rule::utterance_stmt => self.parse_utterance_stmt(stmt),
-                _ => unreachable!(),
-            };
-            self.cur_dialog_mut().blocks.push(block);
+        match stmt.as_rule() {
+            Rule::dialog_stmt => {
+                self.parse_dialog_stmt(stmt)?;
+            }
+            Rule::bookmark_stmt => {
+                self.parse_bookmark_stmt(stmt)?;
+            }
+            Rule::choice_stmt => {
+                self.parse_choice_stmt(stmt)?;
+            }
+            Rule::inline_stmt => {
+                self.parse_inline_stmt(stmt)?;
+            }
+            _ => unreachable!(),
         }
+        Ok(())
+    }
+
+    fn parse_choice_stmt(&mut self, pair: Pair<Rule>) -> Result<()> {
+        assert!(pair.as_rule() == Rule::choice_stmt);
+
+        // TODO
+
+        let block = Block::Choice { choices: vec![] };
+        self.cur_dialog_mut().blocks.push(block);
+        Ok(())
+    }
+
+    fn parse_inline_stmt(&mut self, pair: Pair<Rule>) -> Result<()> {
+        assert!(pair.as_rule() == Rule::inline_stmt);
+
+        let stmt = pair.into_inner().next().unwrap();
+
+        let block = match stmt.as_rule() {
+            Rule::command_stmt => self.parse_command_stmt(stmt)?,
+            Rule::jump_stmt => self.parse_jump_stmt(stmt),
+            Rule::utterance_stmt => self.parse_utterance_stmt(stmt),
+            _ => unreachable!(),
+        };
+        self.cur_dialog_mut().blocks.push(block);
         Ok(())
     }
 
@@ -226,6 +251,7 @@ impl ConversationBuilder {
 
                 Ok(Block::CodeCommand { body })
             }
+            /*
             Rule::if_command_body => {
                 let to_operand = |pair: Pair<Rule>| match pair.as_rule() {
                     Rule::variable_identifier => {
@@ -252,6 +278,7 @@ impl ConversationBuilder {
 
                 Ok(Block::IfCommand { operator, op1, op2 })
             }
+            */
             _ => unreachable!(),
         }
     }

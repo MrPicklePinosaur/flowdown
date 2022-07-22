@@ -404,6 +404,8 @@ impl VFCompiler {
                 });
                 SerializedStep::new(node_id.clone(), vec![value], vec![node_id])
             }
+            Block::Choice { choices } => SerializedStep::new("".into(), vec![], vec![]),
+            /*
             Block::IfCommand { operator, op1, op2 } => {
                 let from_operand = |op: &Operand| match op {
                     Operand::Variable(value) => json!({
@@ -446,6 +448,7 @@ impl VFCompiler {
                 });
                 SerializedStep::new(node_id.clone(), vec![value], vec![node_id])
             }
+            */
         }
     }
 
