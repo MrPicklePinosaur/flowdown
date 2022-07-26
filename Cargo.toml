@@ -7,6 +7,10 @@ description = "lightweight markup language for conversation design"
 repository = "https://github.com/MrPicklePinosaur/flowdown"
 license = "MIT OR Apache-2.0"
 
+[[bin]]
+name = "fdc"
+path = "src/main.rs"
+
 [dependencies]
 serde = { version = "1", features = ["derive"] }
 serde_json = { version = "1" }

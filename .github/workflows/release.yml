@@ -50,7 +50,7 @@ jobs:
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
-          target: x86_64-apple-darwin
+          target: aarch64-apple-darwin
           override: true
       - name: Environment Setup
         run: |
@@ -58,11 +58,11 @@ jobs:
           export MACOSX_DEPLOYMENT_TARGET="10.9"
       - name: Build
         run: |
-          cargo build --release --target x86_64-apple-darwin
+          cargo build --release --target aarch64-apple-darwin
       - name: Prepare Package
         run: |
           mkdir -p ${{ env.binary }}.app/Contents/MacOS
-          cp target/x86_64-apple-darwin/release/${{ env.binary }} ${{ env.binary }}.app/Contents/MacOS/
+          cp target/aarch64-apple-darwin/release/${{ env.binary }} ${{ env.binary }}.app/Contents/MacOS/
           cp -r assets ${{ env.binary }}.app/Contents/MacOS/
           hdiutil create -fs HFS+ -volname "${{ env.binary }}" -srcfolder ${{ env.binary }}.app ${{ env.binary }}.dmg
       - name: Upload binaries to release
