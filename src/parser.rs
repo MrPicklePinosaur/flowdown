@@ -1,3 +1,4 @@
+use log::debug;
 use log::info;
 use pest::{
     iterators::{Pair, Pairs},
@@ -139,24 +140,80 @@ impl ConversationBuilder {
     fn parse_stmt(&mut self, pair: Pair<Rule>) -> Result<()> {
         assert!(pair.as_rule() == Rule::stmt);
 
-        let mut it = pair.into_inner();
-        let stmt = it.next().unwrap();
+        let stmt = pair.into_inner().next().unwrap();
 
-        if stmt.as_rule() == Rule::dialog_stmt {
-            self.parse_dialog_stmt(stmt)?;
-        } else if stmt.as_rule() == Rule::bookmark_stmt {
-            self.parse_bookmark_stmt(stmt)?;
-        } else {
-            // these all evaluate to blocks
-            let block = match stmt.as_rule() {
-                Rule::command_stmt => self.parse_command_stmt(stmt)?,
-                Rule::jump_stmt => self.parse_jump_stmt(stmt),
-                Rule::utterance_stmt => self.parse_utterance_stmt(stmt),
-                _ => unreachable!(),
-            };
-            self.cur_dialog_mut().blocks.push(block);
+        match stmt.as_rule() {
+            Rule::dialog_stmt => {
+                self.parse_dialog_stmt(stmt)?;
+            }
+            Rule::bookmark_stmt => {
+                self.parse_bookmark_stmt(stmt)?;
+            }
+            Rule::choice_stmt => {
+                let block = self.parse_choice_stmt(stmt)?;
+                self.cur_dialog_mut().blocks.push(block);
+            }
+            Rule::inline_stmt => {
+                let block = self.parse_inline_stmt(stmt)?;
+                self.cur_dialog_mut().blocks.push(block);
+            }
+            _ => unreachable!(),
         }
         Ok(())
+    }
+
+    fn parse_choice_stmt(&mut self, pair: Pair<Rule>) -> Result<Block> {
+        assert!(pair.as_rule() == Rule::choice_stmt);
+
+        let mut it = pair.into_inner();
+        let cond = self.parse_conditional(it.next().unwrap())?;
+        let block = self.parse_inline_stmt(it.next().unwrap())?;
+        Ok(Block::Choice {
+            cond,
+            block: Box::new(block),
+        })
+    }
+
+    fn parse_conditional(&mut self, pair: Pair<Rule>) -> Result<Conditional> {
+        assert!(pair.as_rule() == Rule::conditional);
+
+        let to_operand = |pair: Pair<Rule>| match pair.as_rule() {
+            Rule::variable_identifier => {
+                let id = strip_variable(pair.as_str());
+                Operand::Variable(id.to_owned())
+            }
+            Rule::string_literal => {
+                let literal = strip_string_literal(pair.as_str());
+                Operand::Literal(literal.to_owned())
+            }
+            _ => unreachable!(),
+        };
+
+        let to_operator = |pair: Pair<Rule>| match pair.as_str() {
+            "==" => Operator::Equals,
+            "!=" => Operator::NotEquals,
+            _ => unreachable!(),
+        };
+
+        let mut it = pair.into_inner();
+        let op1 = to_operand(it.next().unwrap());
+        let operator = to_operator(it.next().unwrap());
+        let op2 = to_operand(it.next().unwrap());
+        Ok(Conditional { operator, op1, op2 })
+    }
+
+    fn parse_inline_stmt(&mut self, pair: Pair<Rule>) -> Result<Block> {
+        assert!(pair.as_rule() == Rule::inline_stmt);
+
+        let stmt = pair.into_inner().next().unwrap();
+
+        let block = match stmt.as_rule() {
+            Rule::command_stmt => self.parse_command_stmt(stmt)?,
+            Rule::jump_stmt => self.parse_jump_stmt(stmt),
+            Rule::utterance_stmt => self.parse_utterance_stmt(stmt),
+            _ => unreachable!(),
+        };
+        Ok(block)
     }
 
     fn parse_dialog_stmt(&mut self, pair: Pair<Rule>) -> Result<()> {
@@ -225,32 +282,6 @@ impl ConversationBuilder {
                     .map_err(|_| FlowdownError::CannotReadCodeFile(code_path))?;
 
                 Ok(Block::CodeCommand { body })
-            }
-            Rule::if_command_body => {
-                let to_operand = |pair: Pair<Rule>| match pair.as_rule() {
-                    Rule::variable_identifier => {
-                        let id = strip_variable(pair.as_str());
-                        Operand::Variable(id.to_owned())
-                    }
-                    Rule::string_literal => {
-                        let literal = strip_string_literal(pair.as_str());
-                        Operand::Literal(literal.to_owned())
-                    }
-                    _ => unreachable!(),
-                };
-
-                let to_operator = |pair: Pair<Rule>| match pair.as_str() {
-                    "==" => Operator::Equals,
-                    "!=" => Operator::NotEquals,
-                    _ => unreachable!(),
-                };
-
-                let mut it = command_stmt.into_inner().next().unwrap().into_inner();
-                let op1 = to_operand(it.next().unwrap());
-                let operator = to_operator(it.next().unwrap());
-                let op2 = to_operand(it.next().unwrap());
-
-                Ok(Block::IfCommand { operator, op1, op2 })
             }
             _ => unreachable!(),
         }

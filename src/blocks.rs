@@ -28,6 +28,13 @@ pub enum Operand {
 }
 
 #[derive(Debug)]
+pub struct Conditional {
+    pub operator: Operator,
+    pub op1: Operand,
+    pub op2: Operand,
+}
+
+#[derive(Debug)]
 pub enum Block {
     Jump {
         target: JumpTarget,
@@ -46,10 +53,9 @@ pub enum Block {
     CodeCommand {
         body: String,
     },
-    IfCommand {
-        operator: Operator,
-        op1: Operand,
-        op2: Operand,
-    },
     EndCommand,
+    Choice {
+        cond: Conditional,
+        block: Box<Block>,
+    },
 }

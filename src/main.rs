@@ -13,15 +13,10 @@ use argparse::{Cli, Command, Flag, FlagParse};
 use log::{debug, info};
 
 const INPUT: &str = r#"
-
-line 1
--> end
-line 2
-line 3
-line 4
-= end
-line 5
-
+[capture $name]
+* $name == "daniel": your name is daniel
+* $name == "nithin": your name is nithin
+next
 
 "#;
 
