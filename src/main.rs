@@ -7,18 +7,9 @@ extern crate pest;
 #[macro_use]
 extern crate pest_derive;
 
-use crate::generator::voiceflow::*;
-use crate::parser::ConversationBuilder;
+use crate::{error::CliError, generator::voiceflow::*, parser::ConversationBuilder};
 use argparse::{Cli, Command, Flag, FlagParse};
 use log::{debug, info};
-
-const INPUT: &str = r#"
-[capture $name]
-* $name == "daniel": your name is daniel
-* $name == "nithin": your name is nithin
-next
-
-"#;
 
 fn main() {
     env_logger::builder().format_timestamp(None).init();
@@ -54,13 +45,18 @@ fn handle_compile(flagparse: FlagParse) -> Result<(), Box<dyn std::error::Error>
 
     let output_file = flagparse.get_flag_value::<String>('o');
 
+    debug!("{:?}", flagparse.args);
+    if flagparse.args.len() < 1 {
+        return Err(Box::new(CliError::MissingInputFile));
+    }
+
+    let input_file = flagparse.args.get(0).unwrap();
+    let body = std::fs::read_to_string(input_file)
+        .map_err(|_| Box::new(CliError::CannotReadFlowdownFile(input_file.into())))?;
+
     let mut conv_builder = ConversationBuilder::new();
-    conv_builder.parse(INPUT).unwrap();
+    conv_builder.parse(&body).unwrap();
     let conv = conv_builder.build().unwrap();
-
-    // debug!("{:?}", conv.dialog_table);
-
-    // println!("{:?}", parser);
 
     let config = VFConfig {
         project_name: "flowdown".into(),

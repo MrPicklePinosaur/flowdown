@@ -14,7 +14,7 @@ dependencies = [
 [[package]]
 name = "argparse"
 version = "0.1.0"
-source = "git+https://github.com/MrPicklePinosaur/pino.rs#3ea7264f35eb6bb575ec281fd8ae5468dd3dcc39"
+source = "git+https://github.com/MrPicklePinosaur/pino.rs?rev=69b4452c66172adfe16af9e956fc614a9804108a#69b4452c66172adfe16af9e956fc614a9804108a"
 
 [[package]]
 name = "atty"
