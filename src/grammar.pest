@@ -9,7 +9,7 @@ diagram = {
 }
 
 stmt = {
-    dialog_stmt|bookmark_stmt|command_stmt|choice_stmt|inline_stmt
+    dialog_stmt|bookmark_stmt|choice_stmt|inline_stmt
 }
 inline_stmt = {
     command_stmt|jump_stmt|utterance_stmt

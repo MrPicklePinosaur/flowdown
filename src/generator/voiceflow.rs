@@ -232,7 +232,7 @@ impl VFCompiler {
             for (prev_node_id, prev_node_port_type) in prev_node_ids.iter() {
                 nodes[&prev_node_id]["data"]["portsV2"]["builtIn"]
                     [prev_node_port_type.to_string()] =
-                    serialize_port(prev_node_port_type, &root_step_id);
+                    serialize_port(prev_node_port_type, Some(&root_step_id));
             }
 
             for new_step in new_steps.iter() {
@@ -244,7 +244,7 @@ impl VFCompiler {
                 );
 
                 // create the block for the step
-                let new_block = self.serialize_block(&root_step_id);
+                let new_block = self.serialize_block(&step_id);
                 let block_id = get_node_id(&new_block).unwrap();
                 nodes[&block_id] = new_block;
             }
@@ -351,7 +351,9 @@ impl VFCompiler {
                         ],
                         "portsV2": {
                             "byKey": {},
-                            "builtIn": {},
+                            "builtIn": {
+                                "next": serialize_port(&PortType::Next, None),
+                            },
                             "dynamic": [],
                         },
                     }
@@ -366,7 +368,7 @@ impl VFCompiler {
                 let node_id = generate_id();
                 let value = json!({
                     "nodeID": node_id,
-                    "type": "end",
+                    "type": "exit",
                     "data": {
                         "portsV2": {
                             "byKey": {},
@@ -399,7 +401,9 @@ impl VFCompiler {
                         ],
                         "portsV2": {
                             "byKey": {},
-                            "builtIn": {},
+                            "builtIn": {
+                                "next": serialize_port(&PortType::Next, None),
+                            },
                             "dynamic": [],
                         },
                     }
@@ -426,7 +430,9 @@ impl VFCompiler {
                         "chips": null,
                         "portsV2": {
                             "byKey": {},
-                            "builtIn": {},
+                            "builtIn": {
+                                "next": serialize_port(&PortType::Next, None),
+                            },
                             "dynamic": [],
                         },
                     },
@@ -446,7 +452,9 @@ impl VFCompiler {
                         "code": body,
                         "portsV2": {
                             "byKey": {},
-                            "builtIn": {},
+                            "builtIn": {
+                                "next": serialize_port(&PortType::Next, None),
+                            },
                             "dynamic": [],
                         },
                     },
@@ -550,7 +558,7 @@ impl VFCompiler {
                         .unwrap();
 
                     block["data"]["portsV2"]["builtIn"][PortType::Next.to_string()] =
-                        serialize_port(&PortType::Next, block_id);
+                        serialize_port(&PortType::Next, Some(block_id));
                 }
                 JumpTarget::Dialog(target_name) => {
                     let jump_diagram_id = self.dialog_symbols.get(target_name).unwrap().to_owned();
@@ -600,7 +608,7 @@ impl std::fmt::Display for PortType {
     }
 }
 
-fn serialize_port(port_type: &PortType, target: &str) -> Value {
+fn serialize_port(port_type: &PortType, target: Option<&str>) -> Value {
     json!({
         "type": port_type.to_string(),
         "target": target,
