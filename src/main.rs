@@ -11,6 +11,17 @@ use crate::{error::CliError, generator::voiceflow::*, parser::ConversationBuilde
 use argparse::{Cli, Command, Flag, FlagParse};
 use log::{debug, info};
 
+const HELP_MSG: &'static str = r#"
+fdc - the flowdown compiler
+
+USAGE: fdc [INPUT]
+
+OPTIONS:
+    -h, --help                print this help message
+    -p, --pretty              format output file nicely
+    -o, --output <FILE>       specify file to output to
+"#;
+
 fn main() {
     env_logger::builder().format_timestamp(None).init();
 
@@ -22,6 +33,7 @@ fn main() {
             desc: "",
             handler: handle_compile,
             flags: vec![
+                Flag::new('h').long("help"),
                 Flag::new('o')
                     .long("output")
                     .desc("file to output to")
@@ -34,14 +46,22 @@ fn main() {
         ..Default::default()
     };
 
+    use std::io::*;
     let args = std::env::args().collect();
-    cli.run(&args).unwrap();
+    if let Err(boxed) = cli.run(&args) {
+        write!(stderr(), "{}", boxed).unwrap();
+    }
 }
 
 fn handle_compile(flagparse: FlagParse) -> Result<(), Box<dyn std::error::Error>> {
     use std::fs::*;
     use std::io::*;
     use std::path::*;
+
+    if flagparse.get_flag('h') {
+        println!("{}", HELP_MSG);
+        return Ok(());
+    }
 
     let output_file = flagparse.get_flag_value::<String>('o');
 
