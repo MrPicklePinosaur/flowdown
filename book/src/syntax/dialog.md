@@ -1,19 +1,23 @@
 # Dialog and Bookmarks
 
-a fundamental part of writing readable conversations is the ability to break
-apart conversations into reusable and contained pieces. in the canvas, this is
+A fundamental part of writing readable conversations is the ability to break
+apart conversations into reusable and contained pieces. In the canvas, this is
 accomplished by topics and flows.
 
-topics allow us to move intent triggers into it's own section (no functional
+Topics allow us to move intent triggers into it's own section (no functional
 difference other than organization), whereas flows resemble function calls,
 allowing us to package up reusable logic.
 
-our implementation is as follows.
+In flowdown, we have dialogs and bookmarks.
 
-dialogs are analogous to function calls, they allow us to define reusable
-blocks of dialog that we can jump to from anywhere.
+## Dialogs
+Dialogs are analogous to function
+calls, they allow us to define reusable blocks of dialog that we can jump to
+from anywhere.
 
 ```
+this is the main dialog
+
 @ welcome
 
 hello welcome to my store!
@@ -26,19 +30,38 @@ my store sells a lot of things
 
 contact me!
 ```
-the output is as follows
+The output is as follows
 ```
-> hello welcome to my store!
+> this is the main dialog
 ```
-notice how the other dialogs aren't executed. when a dialog ends,
-we entire terminate (if top level dialog), or we return control to the
-caller.
-```
-@ layer1
+Notice how the other dialogs aren't executed. A flowdown conversation has an implicit `main` dialog before any
+dialogs are declared. It's also the entry point into the conversation.
 
-    enter layer1
-    -> @layer2
-    exit layer1
+Dialogs can be jumped to by using the `->` operator like so:
+```
+this is the main dialog
+-> @welcome
+
+@ welcome
+this is the welcome dialog
+-> about
+
+@ about
+this is the about dialog
+```
+And our output will be:
+```
+> this is the main dialog
+> this is the welcome dialog
+> this is the about dialog
+```
+
+When a dialog ends, we entire terminate (if top level dialog), or we return
+control to the caller.
+```
+enter layer1
+-> @layer2
+exit layer1
 
 @ layer2
 
@@ -52,7 +75,7 @@ caller.
     exit layer3
 
 ```
-will output
+This will output
 ```
 > enter layer1
 > enter layer2
@@ -62,9 +85,13 @@ will output
 > exit layer1
 ```
 
-bookmarks are quite like html header links. they give us an anchor to jump to,
+## Bookmarks
+Bookmarks are quite like html header links. They give us an anchor to jump to,
 but don't offer any containment, when the next bookmark starts, we will start
-executing it. they are local to a dialog.
+executing it. Bookmarks are specifed by using
+an equal sign (`=`) followed by a name for the bookmark. We can jump to
+bookmarks by using the `->` operator again, but this time we do not prefix the
+identifier with an `@` sign.
 ```
 @ self intro
 
@@ -91,17 +118,13 @@ output:
 > i am currently making a store
 > i will continue making stores
 ```
-TODO: nested bookmarks with (==, ===, etc)
 
-and of course, bookmarks are scoped
+And of course, bookmarks are scoped, they are local to a dialog.
 ```
 @ dialog 1
 
     jump to:
-    * bookmark 1 -> bookmark 1
-    * bookmark 2 -> bookmark 2
-    * bookmark 3 -> bookmark 3 // error
-    * bookmark 4 -> bookmark 4 // error
+    -> bookmark 3 // this will error
 
     = bookmark 1
 

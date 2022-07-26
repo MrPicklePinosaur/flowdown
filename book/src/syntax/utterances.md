@@ -1,39 +1,28 @@
 # Utterances
 
-the most basic 'program' is just text
+The most basic 'program' is just text:
 ```
 hello world!
 ```
 
-each spoken utterance continues across new lines - utterances are broken up by
-an empty line
-```
-hello
-world
-this is still
-the same utterance
-
-but this is
-a different utterance
-```
-
-curly braces represent special text actions, we will break down a couple:
-
-variables can be incorporated by prefixing an identifier with a dollar sign
+Curly braces represent special text actions, we will break down a couple.
+Firstly, variables can be incorporated by prefixing an identifier with a dollar
+sign
 ```
 hello {$name}, nice to meet you!
 ```
 
-we can introduce variations on the text by using the pipe `|` character. this
+We can introduce variations on the text by using the pipe `|` character. This
 will generate all the appropriate utterance variations for you.
 ```
 {what can I get for|how can i help} you today?
 ```
 
-## comments
+## Comments
 
-single line comments supported with (`//`) and multi line comments with (`/* */`)
+Single line comments supported with (`//`) and multi line comments with (`/* */`)
 
+<!--
 ## Escapes and block quotes (don't include)
 
 since square brackets and curly braces have special uses, to output the
@@ -49,11 +38,15 @@ quote to output the text literally:
 > so fun!
 > and im on a new line!
 ```
+-->
 
-## Tones (WIP)
+## Tones and Voices
 
-you can control how the voice assistant outputs the utterance with tone indicators
+You can control how the voice assistant outputs the utterance with tone
+indicators. For example, the voice that is used to say the utterance can be
+specified.
 ```
-hey! did you eat my cake?!?! # angry
-oh my bad, i ate it earlier  # apologetic
+hello I am the default voice
+hello I am a japanese voice # ja-JP-standard-A 
 ```
+

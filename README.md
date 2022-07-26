@@ -85,10 +85,12 @@ Plug 'MrPicklePinosaur/flowdown', { 'rtp': 'tools/vim' }
 ## TODO / PLANNED FEATURES
 
 - [x] vim syntax highlight
+- [ ] vscode plugin
 - [x] cli
 - [x] support for external files (audio, code)
 - [ ] project configuration toml
 - [ ] linker
+- [ ] packages for various platforms
 
 ## RESOURCES/RESEARCH
 
