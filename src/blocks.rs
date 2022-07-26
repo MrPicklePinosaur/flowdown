@@ -53,6 +53,12 @@ pub enum Block {
     CodeCommand {
         body: String,
     },
+    AudioCommand {
+        url: String,
+    },
+    ImageCommand {
+        url: String,
+    },
     EndCommand,
     Choice {
         cond: Conditional,

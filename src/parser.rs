@@ -283,6 +283,28 @@ impl ConversationBuilder {
 
                 Ok(Block::CodeCommand { body })
             }
+            Rule::audio_command_body => {
+                let url = command_stmt
+                    .into_inner()
+                    .next()
+                    .unwrap()
+                    .as_str()
+                    .to_owned();
+
+                info!("audio command: {}", url);
+                Ok(Block::AudioCommand { url })
+            }
+            Rule::image_command_body => {
+                let url = command_stmt
+                    .into_inner()
+                    .next()
+                    .unwrap()
+                    .as_str()
+                    .to_owned();
+
+                info!("image command: {}", url);
+                Ok(Block::ImageCommand { url })
+            }
             _ => unreachable!(),
         }
     }

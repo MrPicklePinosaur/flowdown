@@ -465,6 +465,65 @@ impl VFCompiler {
                     vec![(node_id, PortType::Next)],
                 )
             }
+            Block::AudioCommand { url } => {
+                let node_id = generate_id();
+                let value = json!({
+                    "nodeID": node_id,
+                    "type": "speak",
+                    "data": {
+                        "randomize": true,
+                        "canvasVisibility": "preview",
+                        "dialogs": [
+                            {
+                                "voice": "audio",
+                                "content": url,
+                            }
+                        ],
+                        "portsV2": {
+                            "byKey": {},
+                            "builtIn": {
+                                "next": serialize_port(&PortType::Next, None),
+                            },
+                            "dynamic": [],
+                        },
+                    }
+                });
+                SerializedStep::new(
+                    node_id.clone(),
+                    vec![value],
+                    vec![(node_id, PortType::Next)],
+                )
+            }
+            Block::ImageCommand { url } => {
+                let node_id = generate_id();
+                let value = json!({
+                    "nodeID": node_id,
+                    "type": "visual",
+                    "data": {
+                        "visualType": "image",
+                        "canvasVisibility": "full",
+                        "frameType": "AUTO",
+                        "image": url,
+                        "device": None as Option<String>,
+                        "dimensions": {
+                            "width": 460,
+                            "height": 460
+                        },
+                        "portsV2": {
+                            "byKey": {},
+                            "builtIn": {
+                                "next": serialize_port(&PortType::Next, None),
+                            },
+                            "dynamic": [],
+                        },
+                    }
+                });
+                SerializedStep::new(
+                    node_id.clone(),
+                    vec![value],
+                    vec![(node_id, PortType::Next)],
+                )
+            }
             Block::Choice {
                 cond: Conditional { operator, op1, op2 },
                 block,

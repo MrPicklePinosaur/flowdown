@@ -24,7 +24,7 @@ bookmark_stmt = {
 }
 
 command_stmt = {
-    "[" ~ (end_command_body|set_command_body|capture_command_body|code_command_body) ~ "]"
+    "[" ~ (end_command_body|set_command_body|capture_command_body|code_command_body|audio_command_body|image_command_body) ~ "]"
 }
 end_command_body = {
     "end"
@@ -37,6 +37,12 @@ capture_command_body = {
 }
 code_command_body = {
     "code" ~ js_file_name
+}
+audio_command_body = {
+    "audio" ~ url
+}
+image_command_body = {
+    "image" ~ url
 }
 
 conditional = {
@@ -79,6 +85,10 @@ string_literal = @{
 
 js_file_name = @{
     ASCII_ALPHANUMERIC+ ~ ".js"    
+}
+
+url = @{
+    (ASCII_ALPHANUMERIC|"-"|"."|"_"|"~"|":"|"/"|"?"|"#"|"@"|"!"|"$"|"&"|"'"|"("|")"|"*"|"+"|","|";"|"%"|"=")+
 }
 
 SPACE_ID = @{
