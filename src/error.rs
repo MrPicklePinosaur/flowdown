@@ -13,3 +13,11 @@ pub enum FlowdownError {
     #[error("cannot read source code file {0}")]
     CannotReadCodeFile(String),
 }
+
+#[derive(Error, Debug)]
+pub enum CliError {
+    #[error("did not provide input flowdown file")]
+    MissingInputFile,
+    #[error("cannot read source flowdown file {0}")]
+    CannotReadFlowdownFile(String),
+}

@@ -16,11 +16,11 @@ inline_stmt = {
 }
 
 dialog_stmt = {
-    "@" ~ ID
+    "@" ~ SPACE_ID
 }
 
 bookmark_stmt = {
-    "=" ~ ID
+    "=" ~ SPACE_ID
 }
 
 command_stmt = {
@@ -54,7 +54,7 @@ utterance_stmt = {
     utterance_content ~ ("#" ~ utterance_voice)?
 }
 utterance_content = {
-    ASCII_ALPHANUMERIC+
+    (ASCII_ALPHANUMERIC|"!"|"?")+
 }
 utterance_voice = @{
     (ASCII_ALPHANUMERIC|"-")+
@@ -65,10 +65,10 @@ jump_stmt = {
 }
 
 dialog_identifier = {
-    "@" ~ ID
+    "@" ~ SPACE_ID
 }
 bookmark_identifier = {
-    ID
+    SPACE_ID
 }
 variable_identifier = @{
     "$" ~ ID
