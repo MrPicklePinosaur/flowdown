@@ -2,6 +2,8 @@
 
 [Introduction](README.md)
 
+- [Getting Started](./getting_started.md)
+    - [Developer Tools](./intro/developer_tools.md)
 - [Syntax](./syntax.md)
     - [Utterances](syntax/utterances.md)
     - [Commands](syntax/commands.md)

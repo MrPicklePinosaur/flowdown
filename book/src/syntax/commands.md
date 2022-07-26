@@ -1,56 +1,55 @@
 # Commands
 
-commands are actions that we wish to take that are external to the
-conversation. these should read similar to stage directions in a script. 
+Commands are actions that we wish to take that are external to the
+conversation. These should read similar to stage directions in a script. A good
+way to think of commands are as 'side effects'. Most (if not all) voiceflow
+blocks for voice assistants are implemented:
 
-a good way to think of commands are as 'side effects'
-
-here are some voiceflow blocks implemented as commands:
-
-**audio**
+### Audio
+The audio file is provided as a url.
 ```
 please wait a moment...
-[sound elevator.wav]
+[audio https://audio.com/mysound.wav]
 ```
 
-**code**
+### Image
+Similar to the audio command, takes in an image url to display.
+```
+here's a cool picture
+[image https://coolpic.com/image.png]
+```
+
+### Code
+A javascript file can be passed in. It's path is relative to the flowdown file.
 ```
 got it! placing an order for you right now!
-[run placeOrder.js]
+[code placeOrder.js]
 ```
 
-**exit**
+### Exit
+Immediately terminate the program
 ```
 goodbye!
 [end]
 ```
 
-**capture**
+### Capture
+Prompt user and capture entire result to variable
 ```
 what's your name?
-[capture $first_name]
+[capture $firstName]
 ```
 
+<!--
 **intent** (listen for intent)
 ```
 what would you like to do today?
 [listen]
 ```
+-->
 
-**set** (update or define variable)
+### Set
+Update or define variable.
 ```
 [set $name "daniel"]
-```
-
-// TODO not sure if should include this feature (force commands to be on its own line)
-Commands can be embedded anywhere inside an utterance. Do note that this
-however will break the utterance up into two
-```
-Actually I wanted to tell you [sound dumroll.wav] that I am your father!
-```
-will yield
-```
-> Actually I wanted to tell you
-[ sound plays ]
-> that I am your father!
 ```
