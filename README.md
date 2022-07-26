@@ -5,6 +5,10 @@
 
 lightweight markup language for conversation design
 
+[![book](https://img.shields.io/badge/book-website-orange)](https://mrpicklepinosaur.github.io/flowdown/)
+[![build](https://github.com/MrPicklePinosaur/flowdown/workflows/Deploy/badge.svg)](https://github.com/MrPicklePinosaur/flowdown/actions)
+[![MIT/Apache 2.0](https://img.shields.io/badge/license-MIT%2FApache-blue.svg)](#)
+
 </div>
 
 **flowdown** is a minimal markup language for writing conversations,
