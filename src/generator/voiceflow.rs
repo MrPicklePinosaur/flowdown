@@ -581,7 +581,9 @@ impl VFCompiler {
                         ],
                         "portsV2": {
                             "byKey": {},
-                            "builtIn": {},
+                            "builtIn": {
+                                "else": serialize_port(&PortType::Else, None),
+                            },
                             "dynamic": [
                                 {
                                     "type": "",
