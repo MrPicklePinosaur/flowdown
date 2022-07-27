@@ -1,0 +1,13 @@
+
+main dialog
+-> @level1
+
+@ level1
+
+im in level 1
+-> @level2
+im back in level 1
+
+@ level2
+
+im in level2

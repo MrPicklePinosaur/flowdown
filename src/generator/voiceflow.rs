@@ -338,7 +338,11 @@ impl VFCompiler {
                                 },
                             }
                         });
-                        SerializedStep::new(node_id.clone(), vec![value], vec![])
+                        SerializedStep::new(
+                            node_id.clone(),
+                            vec![value],
+                            vec![(node_id, PortType::Next)],
+                        )
                     }
                 }
             }
