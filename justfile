@@ -2,10 +2,10 @@
 default: out
 
 out:
-    cargo run -- -p -o out.vf test/full.fd
+    cargo run -- -p -o out.vf test/basic.fd
 
 debug:
-    RUST_LOG=info,debug cargo run -- -p test/full.fd
+    RUST_LOG=info,debug cargo run -- -p test/basic.fd
 
 check:
     cargo check
