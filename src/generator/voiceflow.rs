@@ -101,6 +101,7 @@ impl VFCompiler {
 
         // compile each diagram
         let mut diagrams = json!({});
+        let mut components: Vec<Value> = Vec::new();
         for (name, dialog) in conv.dialog_table.iter() {
             let id = generate_id();
             self.dialog_symbols.insert(name.to_owned(), id.to_owned());
@@ -109,6 +110,10 @@ impl VFCompiler {
                 dialog_name: name.to_owned(),
             };
             diagrams[&id] = self.serialize_dialog(&new_state, &version_id, dialog);
+            components.push(json!({
+                "sourceID": &id,
+                "type": "DIAGRAM"
+            }));
         }
 
         let mut vf_file = json!({
@@ -145,7 +150,7 @@ impl VFCompiler {
                          "defaultVoice": self.config.default_voice,
                      },
                      "publishing": {},
-                     "platform": "voice_default"
+                     "platform": "general"
                 },
                 "name": "Initial Version",
                 "projectID": generate_id(),
@@ -153,8 +158,8 @@ impl VFCompiler {
                 "autoSaveFromRestore": false,
                 "rootDiagramID": self.main_diagram_id(),
                 "creatorID": 0,
-                "_version": 2.2,
-                "components": [],
+                "_version": 2.6,
+                "components": components,
                 "topics": [
                     {
                         "sourceID": self.main_diagram_id(),
@@ -326,7 +331,9 @@ impl VFCompiler {
                                 "variableMap": None as Option<String>,
                                 "portsV2": {
                                     "byKey": {},
-                                    "builtIn": {},
+                                    "builtIn": {
+                                        "next": serialize_port(&PortType::Next, None),
+                                    },
                                     "dynamic": [],
                                 },
                             }

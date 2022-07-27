@@ -60,7 +60,7 @@ utterance_stmt = {
     utterance_content ~ ("#" ~ utterance_voice)?
 }
 utterance_content = {
-    (ASCII_ALPHANUMERIC|"!"|"?")+
+    (ASCII_ALPHANUMERIC|PUNCTUATION|SYMBOL)+
 }
 utterance_voice = @{
     (ASCII_ALPHANUMERIC|"-")+

@@ -18,42 +18,66 @@ be thought of a 'voiceflow programming language' of sorts.
 **flowdown** is designed to be both easy to read and write. Here is an example
 conversation:
 ```markdown
-@ welcome
 
-    {good day|welcome back $name|how are you doing $name}!
-    welcome to my store!  # excited
+Hello! Welcome to Flowdown Pizzaria, what can I do for you?
+[capture $mode]
+* $mode == "order pizza": -> @order
+* $mode == "menu": [image https://flowdownpizza/menu.png]
 
-    = self introduction
+@ order
 
-        my name is pinosaur
+    What type of pizza would you like?
+    [capture $pizzaType]
 
-        skip to any part of my introduction
-        * what have i been doing                        -> backstory
-        * what i am currently doing                     -> present day
-        * what i will do in the future                  -> future
-        * store introduction (skip this entire section) -> store introduction
+    What size of pizza?
+    [capture $pizzaSize]
 
-        == backstory
-        i have been making stores for over 20 years
+    How would you like to recieve your pizza?
+    [capture $pizzaMethod]
+    * $pizzaMethod == "delivery": -> @delivery
+    * $pizzaMethod == "take out": -> @take out
 
-        == present day
-        i am currently making a store
+    Thank you for choosing Flowdown Pizzaria!
+    -> @survey
 
-        == future
+@ delivery
 
-        i will continue making stores
+    Can I get an address
+    [capture $address]
 
-    now let's get to the store's introduciton!!!
+    // run scripts to calculate final price and estimate delivery time
+    [code calculatePrice.js]
+    [code computeDeliveryRoute.js]
 
-    = store introduction
+    Your final price is {$price} and you will get your pizza in about {$deliveryTime}! 
 
-        my store is called the store of stores
+@ take out
 
-    what would you like to do now?
-    * go to shop -> @shop
-    * contact us -> @contact
+    When would you like to pick up your food?
+    [capture $pickupTime}
 
-    welcome back (return from sub-topic)
+    [code calculatePrice.js]
+
+    Your final price is ${price}.
+
+@ survey
+
+    Would you like to complete an optional survey?
+    [capture $survey]
+    * $survey == "yes": -> start survey
+    * $survey == "no": -> end survey
+
+    = start survey
+
+        How would you rate today's experience?
+        [capture $rating]
+
+        Is there any feedback you would like to give?
+        [capture $feedback]
+
+    = end survey
+
+        Thank you!
 
 ```
 
