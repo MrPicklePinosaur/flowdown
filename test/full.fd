@@ -3,7 +3,6 @@ Hello! Welcome to Flowdown Pizzaria, what can I do for you?
 [capture $mode]
 * $mode == "order pizza": -> @order
 * $mode == "menu": [image https://flowdownpizza/menu.png]
-lol
 
 @ order
 
@@ -35,11 +34,11 @@ lol
 @ take out
 
     When would you like to pick up your food?
-    [capture $pickupTime}
+    [capture $pickupTime]
 
     [code calculatePrice.js]
 
-    Your final price is ${price}.
+    Your final price is {$price}.
 
 @ survey
 

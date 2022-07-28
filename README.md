@@ -54,11 +54,11 @@ Hello! Welcome to Flowdown Pizzaria, what can I do for you?
 @ take out
 
     When would you like to pick up your food?
-    [capture $pickupTime}
+    [capture $pickupTime]
 
     [code calculatePrice.js]
 
-    Your final price is ${price}.
+    Your final price is {$price}.
 
 @ survey
 
@@ -114,7 +114,8 @@ Plug 'MrPicklePinosaur/flowdown', { 'rtp': 'tools/vim' }
 - [x] support for external files (audio, code)
 - [ ] project configuration toml
 - [ ] linker
-- [ ] packages for various platforms
+- [x] build binary
+- [ ] format voiceflow blocks nicely
 
 ## RESOURCES/RESEARCH
 

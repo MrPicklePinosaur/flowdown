@@ -110,10 +110,13 @@ impl VFCompiler {
                 dialog_name: name.to_owned(),
             };
             diagrams[&id] = self.serialize_dialog(&new_state, &version_id, dialog);
-            components.push(json!({
-                "sourceID": &id,
-                "type": "DIAGRAM"
-            }));
+
+            if !id.eq(ENTRY_DIALOG) {
+                components.push(json!({
+                    "sourceID": &id,
+                    "type": "DIAGRAM"
+                }));
+            }
         }
 
         let mut vf_file = json!({
@@ -465,6 +468,7 @@ impl VFCompiler {
                             "byKey": {},
                             "builtIn": {
                                 "next": serialize_port(&PortType::Next, None),
+                                "fail": serialize_port(&PortType::Fail, None),
                             },
                             "dynamic": [],
                         },
@@ -669,6 +673,7 @@ fn get_node_id(value: &Value) -> Option<String> {
 enum PortType {
     Next,
     Else,
+    Fail,
 }
 
 impl std::fmt::Display for PortType {
@@ -676,6 +681,7 @@ impl std::fmt::Display for PortType {
         match self {
             PortType::Next => write!(f, "next"),
             PortType::Else => write!(f, "else"),
+            PortType::Fail => write!(f, "fail"),
         }
     }
 }
