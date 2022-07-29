@@ -11,4 +11,6 @@
     - [Control Flow](syntax/control_flow.md)
     - [Intents (WIP)](syntax/intents.md)
 - [Examples](./examples.md)
+    - [Hello World](examples/hello.md)
+    - [Custom Code](examples/code.md)
     - [Full Example](examples/full.md)

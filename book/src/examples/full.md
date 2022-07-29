@@ -1,61 +1,67 @@
 # Full Example
 
+This example uses most of the supported features in flowdown. It walks through
+a simple pizzeria customer service experience.
+
 ```
-@ welcome
+Hello! Welcome to Flowdown Pizzaria, what can I do for you?
+[capture $mode]
+* $mode == "order pizza": -> @order
+* $mode == "menu": [image https://flowdownpizza/menu.png]
 
-    {good day|welcome back $name|how are you doing $name}!
-    welcome to my store!  # excited
+@ order
 
-    = self introduction
+    What type of pizza would you like?
+    [capture $pizzaType]
 
-        my name is pinosaur
+    What size of pizza?
+    [capture $pizzaSize]
 
-        skip to any part of my introduction
-        * what have i been doing                        -> backstory
-        * what i am currently doing                     -> present day
-        * what i will do in the future                  -> future
-        * store introduction (skip this entire section) -> store introduction
+    How would you like to recieve your pizza?
+    [capture $pizzaMethod]
+    * $pizzaMethod == "delivery": -> @delivery
+    * $pizzaMethod == "take out": -> @take out
 
-        == backstory
-        i have been making stores for over 20 years
+    Thank you for choosing Flowdown Pizzaria!
+    -> @survey
 
-        == present day
-        i am currently making a store
+@ delivery
 
-        == future
+    Can I get an address
+    [capture $address]
 
-        i will continue making stores
+    // run scripts to calculate final price and estimate delivery time
+    [code calculatePrice.js]
+    [code computeDeliveryRoute.js]
 
-    now let's get to the store's introduciton!!!
+    Your final price is {$price} and you will get your pizza in about {$deliveryTime}! 
 
-    = store introduction
+@ take out
 
-        my store is called the store of stores
+    When would you like to pick up your food?
+    [capture $pickupTime]
 
-    what would you like to do now?
-    * go to shop -> @shop
-    * contact us -> @contact
+    [code calculatePrice.js]
 
-    welcome back (return from sub-topic)
+    Your final price is {$price}.
 
-@ shop
+@ survey
 
-    todays items for sale
-    * monday menu -> monday
-    * tuesday menu -> tuesday
-    * wednesday menu -> wednesday
+    Would you like to complete an optional survey?
+    [capture $survey]
+    * $survey == "yes": -> start survey
+    * $survey == "no": -> end survey
 
-    = monday
-    burgers -> done
+    = start survey
 
-    = tuesday
-    ramen -> done
+        How would you rate today's experience?
+        [capture $rating]
 
-    = wednesday
-    pasta -> done
+        Is there any feedback you would like to give?
+        [capture $feedback]
 
-    = done
+    = end survey
 
-@ contact
+        Thank you!
 
 ```
