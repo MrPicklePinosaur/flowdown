@@ -1,0 +1,561 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js light">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>flowdown markup language</title>
+        <meta name="robots" content="noindex" />
+        <!-- Custom HTML head -->
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+    </head>
+    <body>
+        <!-- Provide site root to javascript -->
+        <script type="text/javascript">
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script type="text/javascript">
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script type="text/javascript">
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script type="text/javascript">
+            var html = document.querySelector('html');
+            var sidebar = 'hidden';
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="index.html">Introduction</a></li><li class="chapter-item expanded "><a href="getting_started.html"><strong aria-hidden="true">1.</strong> Getting Started</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="intro/developer_tools.html"><strong aria-hidden="true">1.1.</strong> Developer Tools</a></li></ol></li><li class="chapter-item expanded "><a href="syntax.html"><strong aria-hidden="true">2.</strong> Syntax</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="syntax/utterances.html"><strong aria-hidden="true">2.1.</strong> Utterances</a></li><li class="chapter-item expanded "><a href="syntax/commands.html"><strong aria-hidden="true">2.2.</strong> Commands</a></li><li class="chapter-item expanded "><a href="syntax/dialog.html"><strong aria-hidden="true">2.3.</strong> Dialogs and Bookmarks</a></li><li class="chapter-item expanded "><a href="syntax/control_flow.html"><strong aria-hidden="true">2.4.</strong> Control Flow</a></li><li class="chapter-item expanded "><a href="syntax/intents.html"><strong aria-hidden="true">2.5.</strong> Intents (WIP)</a></li></ol></li><li class="chapter-item expanded "><a href="examples.html"><strong aria-hidden="true">3.</strong> Examples</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="examples/hello.html"><strong aria-hidden="true">3.1.</strong> Hello World</a></li><li class="chapter-item expanded "><a href="examples/code.html"><strong aria-hidden="true">3.2.</strong> Custom Code</a></li><li class="chapter-item expanded "><a href="examples/full.html"><strong aria-hidden="true">3.3.</strong> Full Example</a></li></ol></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky bordered">
+                    <div class="left-buttons">
+                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light (default)</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">flowdown markup language</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script type="text/javascript">
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="introduction"><a class="header" href="#introduction">Introduction</a></h1>
+<p><strong>flowdown</strong> is a minimal markup language for writing conversations,
+specifically for the <a href="https://github.com/voiceflow">voiceflow</a> platform. It can
+be thought of a 'voiceflow programming language' of sorts.</p>
+<p>The fundamental guiding principles of <strong>flowdown</strong> are as follows:</p>
+<ul>
+<li>writing a conversation should be 'text' first, meaning that any functionality
+should be built as syntax around the dialogue.</li>
+<li>a conversation should read as it flows - control flow should be obvious to
+follow and syntax should not be cryptic</li>
+<li>conversations should be fun to write and not at all tedious!</li>
+</ul>
+<p>Also please note that <strong>flowdown</strong> is very much still a prototype. It lacks
+many essential features and also may be buggy. If you run into any issues or
+have feedback, please leave an issue in the <a href="https://github.com/MrPicklePinosaur/flowdown">github
+repo</a>.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="getting-started"><a class="header" href="#getting-started">Getting Started</a></h1>
+<h2 id="installation"><a class="header" href="#installation">Installation</a></h2>
+<p>You can get the binary from the <a href="https://github.com/MrPicklePinosaur/flowdown/releases">github
+release</a>. Currently M1
+macos and linux are supported. Simply unzip the files, make the binary
+executable and place it somewhere in your path.</p>
+<h3 id="installation-example-for-linux"><a class="header" href="#installation-example-for-linux">Installation example for linux</a></h3>
+<pre><code>$ wget https://github.com/MrPicklePinosaur/flowdown/releases/download/v0.1/fdc-linux-v0.1.zip
+$ unzip fdc-linux-v0.1.zip
+$ chmod +x fdc
+$ mv fdc /usr/local/bin
+</code></pre>
+<h3 id="installation-example-for-macos"><a class="header" href="#installation-example-for-macos">Installation example for macos</a></h3>
+<pre><code>$ wget https://github.com/MrPicklePinosaur/flowdown/releases/download/v0.1/fdc-macos-v0.1.zip
+$ unzip fdc-linux-v0.1.zip
+$ chmod +x fdc
+$ mv fdc /usr/local/bin
+</code></pre>
+<p>Packaging for various platforms may or may not be coming in the future.</p>
+<h2 id="hello-world-conversation"><a class="header" href="#hello-world-conversation">Hello World Conversation</a></h2>
+<p>Let's compile a basic hello world conversation. The most basic flowdown file is
+just a single utterance.</p>
+<pre><code>$ echo 'Hello world' &gt; hello.fd
+$ fdc -o hello.vf hello.fd
+</code></pre>
+<h2 id="import-to-voiceflow"><a class="header" href="#import-to-voiceflow">Import to Voiceflow</a></h2>
+<p>To be able to run the compiled voiceflow conversation, you will need an account
+on the <a href="https://creator.voiceflow.com/signup">voiceflow platform</a>.</p>
+<p>Once you are setup, navigate to your dashboard and locate the import button on
+the top right corner.</p>
+<p><img src="images/import_button.png" alt="import button" /></p>
+<p>Select and upload the compiled <code>hello.vf</code> file, and you should see the project
+appear in your dashboard. Running our project, we get our first compiled
+conversation!</p>
+<p><img src="images/run_conversation.png" alt="run conversation" /></p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="developer-tools"><a class="header" href="#developer-tools">Developer Tools</a></h1>
+<p>An important aspect of a language is not just the language itself, but also the
+ecosystem and set of tools around the language to make development fun and
+productive. Here are some developer tool (prototypes) that are included.</p>
+<h2 id="vim"><a class="header" href="#vim">Vim</a></h2>
+<p>A vim plugin with syntax highlighting can be installed with the following (for vim-plug users)</p>
+<pre><code>Plug 'MrPicklePinosaur/flowdown', { 'rtp': 'tools/vim' }
+</code></pre>
+<h2 id="vscode"><a class="header" href="#vscode">Vscode</a></h2>
+<p>Vscode extension is coming soon...</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="syntax"><a class="header" href="#syntax">Syntax</a></h1>
+<p>This section will highlight the syntax of flowdown.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="utterances"><a class="header" href="#utterances">Utterances</a></h1>
+<p>The most basic 'program' is just text:</p>
+<pre><code>hello world!
+</code></pre>
+<p>Curly braces represent special text actions, we will break down a couple.
+Firstly, variables can be incorporated by prefixing an identifier with a dollar
+sign</p>
+<pre><code>hello {$name}, nice to meet you!
+</code></pre>
+<p>We can introduce variations on the text by using the pipe <code>|</code> character. This
+will generate all the appropriate utterance variations for you.</p>
+<pre><code>{what can I get for|how can i help} you today?
+</code></pre>
+<h2 id="comments"><a class="header" href="#comments">Comments</a></h2>
+<p>Single line comments supported with (<code>//</code>) and multi line comments with (<code>/* */</code>)</p>
+<!--
+## Escapes and block quotes (don't include)
+
+since square brackets and curly braces have special uses, to output the
+character literally, you must escape them
+```
+here are square bracket \[\] and here are curly braces \{\}
+```
+
+If you find it tiring to have to keep escaping characters, you can use a block
+quote to output the text literally:
+```
+> hey look i can finally use [] {}
+> so fun!
+> and im on a new line!
+```
+-->
+<h2 id="tones-and-voices"><a class="header" href="#tones-and-voices">Tones and Voices</a></h2>
+<p>You can control how the voice assistant outputs the utterance with tone
+indicators. For example, the voice that is used to say the utterance can be
+specified.</p>
+<pre><code>hello I am the default voice
+hello I am a japanese voice # ja-JP-standard-A 
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="commands"><a class="header" href="#commands">Commands</a></h1>
+<p>Commands are actions that we wish to take that are external to the
+conversation. These should read similar to stage directions in a script. A good
+way to think of commands are as 'side effects'. Most (if not all) voiceflow
+blocks for voice assistants are implemented:</p>
+<h3 id="audio"><a class="header" href="#audio">Audio</a></h3>
+<p>The audio file is provided as a url.</p>
+<pre><code>please wait a moment...
+[audio https://audio.com/mysound.wav]
+</code></pre>
+<h3 id="image"><a class="header" href="#image">Image</a></h3>
+<p>Similar to the audio command, takes in an image url to display.</p>
+<pre><code>here's a cool picture
+[image https://coolpic.com/image.png]
+</code></pre>
+<h3 id="code"><a class="header" href="#code">Code</a></h3>
+<p>A javascript file can be passed in. It's path is relative to the flowdown file.</p>
+<pre><code>got it! placing an order for you right now!
+[code placeOrder.js]
+</code></pre>
+<h3 id="exit"><a class="header" href="#exit">Exit</a></h3>
+<p>Immediately terminate the program</p>
+<pre><code>goodbye!
+[end]
+</code></pre>
+<h3 id="capture"><a class="header" href="#capture">Capture</a></h3>
+<p>Prompt user and capture entire result to variable</p>
+<pre><code>what's your name?
+[capture $firstName]
+</code></pre>
+<!--
+**intent** (listen for intent)
+```
+what would you like to do today?
+[listen]
+```
+-->
+<h3 id="set"><a class="header" href="#set">Set</a></h3>
+<p>Update or define variable.</p>
+<pre><code>[set $name &quot;daniel&quot;]
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="dialog-and-bookmarks"><a class="header" href="#dialog-and-bookmarks">Dialog and Bookmarks</a></h1>
+<p>A fundamental part of writing readable conversations is the ability to break
+apart conversations into reusable and contained pieces. In the canvas, this is
+accomplished by topics and flows.</p>
+<p>Topics allow us to move intent triggers into it's own section (no functional
+difference other than organization), whereas flows resemble function calls,
+allowing us to package up reusable logic.</p>
+<p>In flowdown, we have dialogs and bookmarks.</p>
+<h2 id="dialogs"><a class="header" href="#dialogs">Dialogs</a></h2>
+<p>Dialogs are analogous to function
+calls, they allow us to define reusable blocks of dialog that we can jump to
+from anywhere.</p>
+<pre><code>this is the main dialog
+
+@ welcome
+
+hello welcome to my store!
+
+@ about
+
+my store sells a lot of things
+
+@ contact
+
+contact me!
+</code></pre>
+<p>The output is as follows</p>
+<pre><code>&gt; this is the main dialog
+</code></pre>
+<p>Notice how the other dialogs aren't executed. A flowdown conversation has an implicit <code>main</code> dialog before any
+dialogs are declared. It's also the entry point into the conversation.</p>
+<p>Dialogs can be jumped to by using the <code>-&gt;</code> operator like so:</p>
+<pre><code>this is the main dialog
+-&gt; @welcome
+
+@ welcome
+this is the welcome dialog
+-&gt; about
+
+@ about
+this is the about dialog
+</code></pre>
+<p>And our output will be:</p>
+<pre><code>&gt; this is the main dialog
+&gt; this is the welcome dialog
+&gt; this is the about dialog
+</code></pre>
+<p>When a dialog ends, we entire terminate (if top level dialog), or we return
+control to the caller.</p>
+<pre><code>enter layer1
+-&gt; @layer2
+exit layer1
+
+@ layer2
+
+    enter layer2
+    -&gt; @layer3
+    exit layer2
+
+@ layer 3
+
+    enter layer3
+    exit layer3
+
+</code></pre>
+<p>This will output</p>
+<pre><code>&gt; enter layer1
+&gt; enter layer2
+&gt; enter layer3
+&gt; exit layer3
+&gt; exit layer2
+&gt; exit layer1
+</code></pre>
+<h2 id="bookmarks"><a class="header" href="#bookmarks">Bookmarks</a></h2>
+<p>Bookmarks are quite like html header links. They give us an anchor to jump to,
+but don't offer any containment, when the next bookmark starts, we will start
+executing it. Bookmarks are specifed by using
+an equal sign (<code>=</code>) followed by a name for the bookmark. We can jump to
+bookmarks by using the <code>-&gt;</code> operator again, but this time we do not prefix the
+identifier with an <code>@</code> sign.</p>
+<pre><code>@ self intro
+
+    my name is pinosaur
+
+    ok we don't actually care about backstory lol
+    -&gt; present day
+
+    = backstory
+    i have been making stores for over 20 years
+
+    = present day
+    i am currently making a store
+
+    = future
+
+    i will continue making stores
+
+</code></pre>
+<p>output:</p>
+<pre><code>&gt; my name is pinosaur
+&gt; ok we don't actually care about backstory lol
+&gt; i am currently making a store
+&gt; i will continue making stores
+</code></pre>
+<p>And of course, bookmarks are scoped, they are local to a dialog.</p>
+<pre><code>@ dialog 1
+
+    jump to:
+    -&gt; bookmark 3 // this will error
+
+    = bookmark 1
+
+    = bookmark 2
+
+@ dialog 2
+
+    = bookmark 2
+
+    = bookmark 3
+
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="control-flow"><a class="header" href="#control-flow">Control Flow</a></h1>
+<p>Simple control flow can be modified using the choice construct. You can think
+of each choice line as an if-statement. If the condition before the <code>:</code> is
+true, the statement will be executed. Note that only one statement is supported
+after a condition. If you need a more involved branch, use a dialog and jump to
+it, as shown in the 'red' case.</p>
+<pre><code>What's your favorite color?
+[capture $color]
+* $color == &quot;red&quot;: -&gt; @red
+* $color == &quot;blue&quot;: [audio blue_da_ba_dee.wav]
+* $color == &quot;green&quot;: i guess green is an ok color...
+
+@ red
+yay, my favorite color is red too!
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="intents-wip"><a class="header" href="#intents-wip">Intents (WIP)</a></h1>
+<p>Currently not implemented.</p>
+<p>Intents are almost to how topics work, we simply mark the topic with <code>intent:</code>
+and that block can be jumped to from any <code>[listen]</code> command (they behave like
+normal topics otherwise).</p>
+<pre><code>hello, how can i help you today?
+[listen]
+
+@ intent: check balance
+...
+
+@ intent: deposit money
+...
+
+@ intent: withdraw money
+...
+
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="examples"><a class="header" href="#examples">Examples</a></h1>
+<p>This section will provide a couple of example programs to get you started.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="hello-world"><a class="header" href="#hello-world">Hello World</a></h1>
+<p>The most basic flowdown conversation is just plain text. Each line is one
+utterance that is spoken by the assistant.</p>
+<pre><code>In my younger and more vulnerable years my father gave me some advice that I've been turning over in my mind ever since.
+
+'Whenever you feel like criticizing any one,' he told me,
+
+'just remember that all the people in this world haven't had the advantages that you've had.'
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="custom-code"><a class="header" href="#custom-code">Custom Code</a></h1>
+<p>You can provide code snippets for code blocks. Just ensure that the location of
+the source code is relative to the flowdown file. Note that you need to forward
+declare any variables if the script introduces them.</p>
+<pre><code>// dToF.fd
+Input temperature
+[capture $temperature]
+[set $converted &quot;0&quot;]
+[code convert.js]
+
+temperature in fahrenheight is {$converted}
+</code></pre>
+<pre><code class="language-javascript">// convert.js
+
+// all variables are strings (for now)
+const _temp = parseInt(temperature);
+converted = (9/5 * _temp) + 32;
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="full-example"><a class="header" href="#full-example">Full Example</a></h1>
+<p>This example uses most of the supported features in flowdown. It walks through
+a simple pizzeria customer service experience.</p>
+<pre><code>Hello! Welcome to Flowdown Pizzaria, what can I do for you?
+[capture $mode]
+* $mode == &quot;order pizza&quot;: -&gt; @order
+* $mode == &quot;menu&quot;: [image https://flowdownpizza/menu.png]
+
+@ order
+
+    What type of pizza would you like?
+    [capture $pizzaType]
+
+    What size of pizza?
+    [capture $pizzaSize]
+
+    How would you like to recieve your pizza?
+    [capture $pizzaMethod]
+    * $pizzaMethod == &quot;delivery&quot;: -&gt; @delivery
+    * $pizzaMethod == &quot;take out&quot;: -&gt; @take out
+
+    Thank you for choosing Flowdown Pizzaria!
+    -&gt; @survey
+
+@ delivery
+
+    Can I get an address
+    [capture $address]
+
+    [set $price &quot;0&quot;]
+    [set $deliveryTime &quot;0&quot;]
+    [code calculatePrice.js]
+    [code computeDeliveryRoute.js]
+
+    Your final price is {$price} and you will get your pizza in about {$deliveryTime}! 
+
+@ take out
+
+    When would you like to pick up your food?
+    [capture $pickupTime]
+
+    [set $price &quot;0&quot;]
+    [code calculatePrice.js]
+
+    Your final price is {$price}.
+
+@ survey
+
+    Would you like to complete an optional survey?
+    [capture $survey]
+    * $survey == &quot;yes&quot;: -&gt; start survey
+    * $survey == &quot;no&quot;: -&gt; end survey
+
+    = start survey
+
+        How would you rate today's experience?
+        [capture $rating]
+
+        Is there any feedback you would like to give?
+        [capture $feedback]
+
+    = end survey
+
+        Thank you!
+</code></pre>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+            </nav>
+
+        </div>
+
+        <script type="text/javascript">
+            window.playground_copyable = true;
+        </script>
+        <script src="elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="mark.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="searcher.js" type="text/javascript" charset="utf-8"></script>
+        <script src="clipboard.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="highlight.js" type="text/javascript" charset="utf-8"></script>
+        <script src="book.js" type="text/javascript" charset="utf-8"></script>
+
+        <!-- Custom JS scripts -->
+        <script type="text/javascript">
+        window.addEventListener('load', function() {
+            window.setTimeout(window.print, 100);
+        });
+        </script>
+    </body>
+</html>
