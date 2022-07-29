@@ -350,7 +350,17 @@ impl VFCompiler {
                 }
             }
             Block::Utterance { content, voice } => {
+                use regex::*;
                 let node_id = generate_id();
+
+                // perform variable substitution
+                lazy_static! {
+                    static ref RE: Regex = Regex::new(r"\{\$([[:alpha:]]+)\}").unwrap();
+                }
+
+                let substituted_content = RE.replace_all(content, "{{[${1}].${1}}}");
+                debug!("{}", substituted_content);
+
                 let value = json!({
                     "nodeID": node_id,
                     "type": "speak",
@@ -360,7 +370,7 @@ impl VFCompiler {
                         "dialogs": [
                             {
                                 "voice": if let Some(voice) = voice { voice } else { &self.config.default_voice },
-                                "content": content,
+                                "content": substituted_content,
                             }
                         ],
                         "portsV2": {

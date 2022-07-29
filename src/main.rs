@@ -6,6 +6,8 @@ mod parser;
 extern crate pest;
 #[macro_use]
 extern crate pest_derive;
+#[macro_use]
+extern crate lazy_static;
 
 use crate::{error::CliError, generator::voiceflow::*, parser::ConversationBuilder};
 use argparse::{Cli, Command, Flag, FlagParse};
