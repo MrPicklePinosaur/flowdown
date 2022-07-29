@@ -45,7 +45,8 @@ Hello! Welcome to Flowdown Pizzaria, what can I do for you?
     Can I get an address
     [capture $address]
 
-    // run scripts to calculate final price and estimate delivery time
+    [set $price "0"]
+    [set $deliveryTime "0"]
     [code calculatePrice.js]
     [code computeDeliveryRoute.js]
 
@@ -56,6 +57,7 @@ Hello! Welcome to Flowdown Pizzaria, what can I do for you?
     When would you like to pick up your food?
     [capture $pickupTime]
 
+    [set $price "0"]
     [code calculatePrice.js]
 
     Your final price is {$price}.
@@ -78,6 +80,7 @@ Hello! Welcome to Flowdown Pizzaria, what can I do for you?
     = end survey
 
         Thank you!
+
 
 ```
 

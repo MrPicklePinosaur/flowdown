@@ -20,4 +20,6 @@ rand = { version  = "0.8.5" }
 log = { version = "0.4.17" }
 env_logger = { version = "0.9.0" }
 thiserror = { version = "1" }
+regex = { version = "1.6.0" }
+lazy_static = { version = "1.4.0" }
 argparse = { git = "https://github.com/MrPicklePinosaur/pino.rs", rev = "69b4452c66172adfe16af9e956fc614a9804108a" }

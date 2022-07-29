@@ -1,4 +1,4 @@
 
-hello world
-* $sessions == "1": welcome!
-* $sessions == "2": great to see you back
+my variables {$sessions}, {$platform} and also {$timestamp}
+
+this is a normal line
